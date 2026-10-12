@@ -1,0 +1,301 @@
+{
+  "before": 211629398,
+  "after": 162729007,
+  "files": [
+    {
+      "file": "assets/oswald-bold.ttf",
+      "before": 86416,
+      "after": 86416
+    },
+    {
+      "file": "assets/arial.ttf",
+      "before": 1045720,
+      "after": 1045720
+    },
+    {
+      "file": "assets/gallery.webp",
+      "before": 2701743,
+      "after": 145916
+    },
+    {
+      "file": "assets/entrance-02-dark.webp",
+      "before": 2009370,
+      "after": 62342
+    },
+    {
+      "file": "assets/atrium.webp",
+      "before": 2656553,
+      "after": 138480
+    },
+    {
+      "file": "assets/hall-concepts/05-shows-broadcasts.webp",
+      "before": 2013973,
+      "after": 83348
+    },
+    {
+      "file": "assets/case-media/showreel-2025.mp4",
+      "before": 12525420,
+      "after": 5185707
+    },
+    {
+      "file": "assets/case-media/showreel-2025.webp",
+      "before": 13451,
+      "after": 8186
+    },
+    {
+      "file": "assets/ai-hall-walk/01-entry.webp",
+      "before": 119200,
+      "after": 59544
+    },
+    {
+      "file": "assets/ai-hall-walk/02-forward.webp",
+      "before": 163016,
+      "after": 82620
+    },
+    {
+      "file": "assets/ai-hall-walk/03-artwork.webp",
+      "before": 234978,
+      "after": 127290
+    },
+    {
+      "file": "assets/ai-hall-walk/04-exit.webp",
+      "before": 104728,
+      "after": 51076
+    },
+    {
+      "file": "assets/events-hall-walk/01-entry.webp",
+      "before": 230378,
+      "after": 119180
+    },
+    {
+      "file": "assets/events-hall-walk/02-forward.webp",
+      "before": 240378,
+      "after": 126136
+    },
+    {
+      "file": "assets/events-hall-walk/03-artwork.webp",
+      "before": 239870,
+      "after": 125144
+    },
+    {
+      "file": "assets/events-hall-walk/04-exit.webp",
+      "before": 159602,
+      "after": 82198
+    },
+    {
+      "file": "assets/reportage-hall-walk/01-entry.webp",
+      "before": 336934,
+      "after": 184556
+    },
+    {
+      "file": "assets/reportage-hall-walk/02-forward.webp",
+      "before": 371078,
+      "after": 211226
+    },
+    {
+      "file": "assets/reportage-hall-walk/03-artwork.webp",
+      "before": 271074,
+      "after": 147974
+    },
+    {
+      "file": "assets/reportage-hall-walk/04-exit.webp",
+      "before": 275162,
+      "after": 153730
+    },
+    {
+      "file": "assets/hall-concepts/04-graphics-motion-3d.webp",
+      "before": 2491341,
+      "after": 139750
+    },
+    {
+      "file": "assets/case-media/interrosmaster.webp",
+      "before": 46791,
+      "after": 33460
+    },
+    {
+      "file": "assets/case-media/interrosmaster.mp4",
+      "before": 19889942,
+      "after": 19889942
+    },
+    {
+      "file": "assets/case-media/ai.webp",
+      "before": 52928,
+      "after": 38712
+    },
+    {
+      "file": "assets/case-media/ai.mp4",
+      "before": 977046,
+      "after": 977046
+    },
+    {
+      "file": "assets/case-media/it.webp",
+      "before": 49774,
+      "after": 31474
+    },
+    {
+      "file": "assets/case-media/it.mp4",
+      "before": 6721877,
+      "after": 6721877
+    },
+    {
+      "file": "assets/case-media/present.webp",
+      "before": 38056,
+      "after": 26278
+    },
+    {
+      "file": "assets/case-media/present.mp4",
+      "before": 7830501,
+      "after": 7830501
+    },
+    {
+      "file": "assets/case-media/petruhin.webp",
+      "before": 44453,
+      "after": 17410
+    },
+    {
+      "file": "assets/case-media/petruhin.mp4",
+      "before": 5271587,
+      "after": 4301066
+    },
+    {
+      "file": "assets/case-media/chery8.webp",
+      "before": 104371,
+      "after": 87566
+    },
+    {
+      "file": "assets/case-media/chery8.mp4",
+      "before": 1480376,
+      "after": 1480376
+    },
+    {
+      "file": "assets/case-media/omoda.webp",
+      "before": 29526,
+      "after": 10822
+    },
+    {
+      "file": "assets/case-media/omoda.mp4",
+      "before": 5152879,
+      "after": 4127236
+    },
+    {
+      "file": "assets/case-media/gq.webp",
+      "before": 77392,
+      "after": 38226
+    },
+    {
+      "file": "assets/case-media/gq.mp4",
+      "before": 3885835,
+      "after": 3225379
+    },
+    {
+      "file": "assets/case-media/marathon.webp",
+      "before": 70872,
+      "after": 33510
+    },
+    {
+      "file": "assets/case-media/marathon.mp4",
+      "before": 35639570,
+      "after": 27661704
+    },
+    {
+      "file": "assets/case-media/jetourmary.webp",
+      "before": 37064,
+      "after": 22862
+    },
+    {
+      "file": "assets/case-media/jetourmary.mp4",
+      "before": 13407759,
+      "after": 13407759
+    },
+    {
+      "file": "assets/case-media/visualization.webp",
+      "before": 6077,
+      "after": 3542
+    },
+    {
+      "file": "assets/case-media/visualization.mp4",
+      "before": 3451688,
+      "after": 3451688
+    },
+    {
+      "file": "assets/case-media/garden.webp",
+      "before": 40575,
+      "after": 27572
+    },
+    {
+      "file": "assets/case-media/garden.mp4",
+      "before": 1599747,
+      "after": 1599747
+    },
+    {
+      "file": "assets/case-media/catalog.webp",
+      "before": 36518,
+      "after": 24890
+    },
+    {
+      "file": "assets/case-media/catalog.mp4",
+      "before": 918986,
+      "after": 918986
+    },
+    {
+      "file": "assets/case-media/t-bankfuturism.webp",
+      "before": 166231,
+      "after": 117634
+    },
+    {
+      "file": "assets/case-media/t-bankfuturism.mp4",
+      "before": 5168253,
+      "after": 5168253
+    },
+    {
+      "file": "assets/case-media/gqxmercedes.webp",
+      "before": 26857,
+      "after": 16340
+    },
+    {
+      "file": "assets/case-media/gqxmercedes.mp4",
+      "before": 2426070,
+      "after": 2426070
+    },
+    {
+      "file": "assets/case-media/business.webp",
+      "before": 49106,
+      "after": 32374
+    },
+    {
+      "file": "assets/case-media/business.mp4",
+      "before": 8592182,
+      "after": 8592182
+    },
+    {
+      "file": "assets/case-media/bloggers.webp",
+      "before": 52858,
+      "after": 30456
+    },
+    {
+      "file": "assets/case-media/bloggers.mp4",
+      "before": 6128168,
+      "after": 6128168
+    },
+    {
+      "file": "assets/case-media/mango.webp",
+      "before": 6136,
+      "after": 2738
+    },
+    {
+      "file": "assets/case-media/mango.mp4",
+      "before": 2850071,
+      "after": 2850071
+    },
+    {
+      "file": "gooddo-water-gallery-scroll-desktop.mp4",
+      "before": 33846455,
+      "after": 22022746
+    },
+    {
+      "file": "gooddo-water-gallery-scroll-mobile.mp4",
+      "before": 17164436,
+      "after": 10985805
+    }
+  ]
+}
