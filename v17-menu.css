@@ -1,0 +1,109 @@
+/* GoodDo v17 — editorial navigation without a glass container */
+.route-hud{
+  min-height:83px;
+  padding:26px clamp(24px,2.7vw,48px) 28px;
+  grid-template-columns:minmax(160px,1fr) auto minmax(180px,1fr);
+  align-items:start;
+  gap:24px;
+  background:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  isolation:isolate
+}
+.route-hud::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0 0 -138px;
+  background:linear-gradient(180deg,#0d1825a8 0%,#0d182568 28%,#0d182500 100%);
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  mask-image:none;
+  -webkit-mask-image:none;
+  pointer-events:none
+}
+.route-hud .route-brand{
+  font:800 30px/1 Arial,sans-serif;
+  letter-spacing:-2.7px;
+  text-shadow:0 2px 18px #0006
+}
+.route-hud .route-nav{
+  display:flex;
+  justify-self:center;
+  align-items:center;
+  gap:29px;
+  padding:2px 0 0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none
+}
+.route-hud .route-nav button,
+.route-hud .route-nav button[aria-current=step],
+.route-hud .route-nav button:hover,
+.route-hud .route-nav button:focus-visible{
+  position:relative;
+  flex:none;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  color:#f8f6f0;
+  font:500 14px/22px Arial,sans-serif;
+  letter-spacing:0;
+  text-shadow:0 2px 12px #0008;
+  opacity:.84
+}
+.route-hud .route-nav button[aria-current=step],
+.route-hud .route-nav button:hover,
+.route-hud .route-nav button:focus-visible{opacity:1}
+.route-hud .route-nav button[aria-current=step]::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-9px;
+  height:1px;
+  margin:0;
+  background:#fff
+}
+.route-hud .route-contact,
+.route-hud .route-contact:hover,
+.route-hud .route-contact:focus-visible{
+  justify-self:end;
+  padding:0 0 6px;
+  border:0;
+  border-bottom:1px solid #ffffffb0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  color:#fff;
+  font:600 13px/22px Arial,sans-serif;
+  text-decoration:none;
+  text-shadow:0 2px 13px #0009
+}
+@media(max-width:1050px){
+  .route-hud{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;row-gap:20px;min-height:126px;padding:18px 24px 25px}
+  .route-hud .route-brand{grid-column:1;grid-row:1;font-size:26px}
+  .route-hud .route-contact{grid-column:2;grid-row:1}
+  .route-hud .route-nav{grid-column:1/-1;grid-row:2;justify-self:start;gap:23px}
+}
+@media(max-width:760px){
+  .route-hud{min-height:119px;row-gap:19px;padding:16px 18px 28px}
+  .route-hud::before{inset:0 0 -110px}
+  .route-hud .route-brand{font-size:23px;letter-spacing:-2px}
+  .route-hud .route-contact,.route-hud .route-contact:hover,.route-hud .route-contact:focus-visible{position:absolute;top:16px;right:18px;font-size:10px;line-height:20px;padding-bottom:3px}
+  .route-hud .route-nav{width:100%;min-width:0;max-width:calc(100vw - 36px);gap:20px;overflow-x:auto;scrollbar-width:none}
+  .route-hud .route-nav::-webkit-scrollbar{display:none}
+  .route-hud .route-nav button,.route-hud .route-nav button[aria-current=step],.route-hud .route-nav button:hover,.route-hud .route-nav button:focus-visible{font-size:11px;line-height:20px}
+}
