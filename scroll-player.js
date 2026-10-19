@@ -1,4 +1,4 @@
-// A single paused film follows native scroll in both directions.
+// A single paused film follows the route; one gesture advances to the next scene.
 const film = document.getElementById('scroll-film');
 const journey = document.getElementById('journey');
 const loading = document.getElementById('loading');
@@ -36,7 +36,15 @@ clips.forEach((clip,i) => {
   if(i>=2&&i<=6) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-2));
 });
 const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
-const chapterPositions=[0,titleSegment.offset+.3,reelSegment.offset+1,holds[0].offset+1,finale.offset+1];
+const stagePositions=[
+  0,
+  ...titles.map((_,i)=>titleSegment.offset+titleSegment.weight*(i+.5)/titles.length),
+  reelSegment.offset+reelSegment.weight*.5,
+  ...holds.map(hold=>hold.offset+hold.weight*.68),
+  finale.offset+finale.weight*.42,
+  finale.offset+finale.weight*.94
+];
+const chapterPositions=[stagePositions[0],stagePositions[1],stagePositions[5],stagePositions[6],stagePositions[11]];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
 film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4')+'?v=show-return-1';
 const portalWash=document.createElement('div');
@@ -92,9 +100,78 @@ function render(now){
   const time=Math.min(targetTime,film.duration-1/24);
   if(Math.abs(film.currentTime-time)>1/60){lastSeek=now;film.currentTime=time;}
 }
-function goTo(position){
-  scrollTo({top:journey.offsetTop+position/total*(journey.offsetHeight-innerHeight),behavior:reducedMotion.matches?'instant':'smooth'});
+const routeTop=position=>journey.offsetTop+position/total*(journey.offsetHeight-innerHeight);
+const routePosition=()=>clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight))*total;
+let flight=0,flightTarget=-1,lastFlightEnd=-Infinity;
+function stopFlight(){if(flight)cancelAnimationFrame(flight);flight=0;flightTarget=-1;}
+function flyTo(position){
+  stopFlight();
+  const from=scrollY,to=routeTop(position),distance=Math.abs(to-from);
+  if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});return;}
+  const span=Math.abs(position-routePosition());
+  const duration=Math.min(4300,Math.max(650,span>5?1600+span*210:650+span*160));
+  const started=performance.now();
+  flightTarget=position;
+  const frame=now=>{
+    const p=clamp((now-started)/duration);
+    const eased=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    scrollTo({top:from+(to-from)*eased,behavior:'instant'});
+    if(p<1)flight=requestAnimationFrame(frame);
+    else{flight=0;flightTarget=-1;lastFlightEnd=performance.now();}
+  };
+  flight=requestAnimationFrame(frame);
 }
+function goTo(position){flyTo(position);}
+function advanceStage(direction){
+  if(flight){
+    // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
+    const moving=Math.sign(flightTarget-routePosition());
+    if(direction===moving)return;
+    stopFlight();
+  }
+  const position=routePosition();
+  const tolerance=Math.max(.02,total*.0005);
+  const next=direction>0
+    ?stagePositions.findIndex(stop=>stop>position+tolerance)
+    :stagePositions.findLastIndex(stop=>stop<position-tolerance);
+  if(next<0){if(direction>0)scrollTo({top:journey.offsetTop,behavior:'instant'});return;}
+  flyTo(stagePositions[next]);
+}
+function routeInputAllowed(target){
+  return !document.getElementById('project').open
+    && !document.fullscreenElement
+    && !(target instanceof Element&&target.closest('input,textarea,select,[contenteditable],.project-cards,.route-nav'));
+}
+addEventListener('wheel',event=>{
+  if(event.defaultPrevented||event.ctrlKey||!routeInputAllowed(event.target)||Math.abs(event.deltaY)<2)return;
+  if(scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+journey.offsetHeight-innerHeight+2)return;
+  event.preventDefault();
+  if(!flight&&performance.now()-lastFlightEnd<420)return;
+  advanceStage(Math.sign(event.deltaY));
+},{passive:false});
+addEventListener('keydown',event=>{
+  if(event.defaultPrevented||!routeInputAllowed(event.target)||event.altKey||event.ctrlKey||event.metaKey)return;
+  const direction=['ArrowDown','PageDown',' '].includes(event.key)?1:['ArrowUp','PageUp'].includes(event.key)?-1:0;
+  if(!direction)return;
+  event.preventDefault();
+  advanceStage(direction);
+});
+let touchStart=null;
+addEventListener('touchstart',event=>{
+  if(event.touches.length!==1||!routeInputAllowed(event.target)||scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+journey.offsetHeight-innerHeight+2){touchStart=null;return;}
+  touchStart={x:event.touches[0].clientX,y:event.touches[0].clientY};
+},{passive:true});
+addEventListener('touchmove',event=>{
+  if(!touchStart||event.touches.length!==1)return;
+  const dx=event.touches[0].clientX-touchStart.x,dy=event.touches[0].clientY-touchStart.y;
+  if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>6)event.preventDefault();
+},{passive:false});
+addEventListener('touchend',event=>{
+  if(!touchStart||!event.changedTouches.length)return;
+  const dx=event.changedTouches[0].clientX-touchStart.x,dy=event.changedTouches[0].clientY-touchStart.y;
+  touchStart=null;
+  if(Math.abs(dy)>35&&Math.abs(dy)>Math.abs(dx)*1.2)advanceStage(dy<0?1:-1);
+},{passive:true});
 function syncScroll(){
   const progress=clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight));
   const forward=scrollY>previousY+1;
@@ -155,5 +232,5 @@ addEventListener('scroll',syncScroll,{passive:true});
 addEventListener('resize',syncScroll);
 chapters.forEach((button,i)=>button.addEventListener('click',()=>goTo(chapterPositions[i])));
 document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(button.dataset.hall)].offset+1)));
-document.querySelectorAll('[data-walk]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(portfolio.dataset.hallIndex||0)].offset+1)));
+document.querySelectorAll('[data-walk]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(portfolio.dataset.hallIndex||0)].offset+holds[0].weight*.68)));
 syncScroll();
