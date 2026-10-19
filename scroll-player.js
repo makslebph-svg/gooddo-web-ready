@@ -20,32 +20,49 @@ function add(kind, start, end, weight, hall = -1) {
   return segment;
 }
 const holds=[];
+let titleSegment, approachSegment, reelSegment, portalSegment;
 clips.forEach((clip,i) => {
   // Reverse only the daylight clip; all subsequent passages keep their direction.
-  add(i===0?'hero':'travel',i===0?clip.end-1/24:clip.start,i===0?clip.start:clip.end-1/24,clip.end-clip.start,i>=4&&i<=8?i-4:-1);
-  if(i===2) add('showreel',clip.end-1/24,clip.end-1/24,5);
-  if(i>=3&&i<=7) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-3));
+  if(i===2){
+    // Stop while the painting is still clearly visible in the gallery.
+    const painting=clip.start+3.5;
+    approachSegment=add('approach',clip.start,painting,3.5);
+    reelSegment=add('showreel',painting,painting,6);
+    // Give the painting entry its own scroll range before revealing the next hall.
+    portalSegment=add('portal',painting,painting,4.5);
+    add('travel',clip.start+4.5,clip.end-1/24,3.5);
+  }else add(i===0?'hero':'travel',i===0?clip.end-1/24:clip.start,i===0?clip.start:clip.end-1/24,clip.end-clip.start,i>=3&&i<=7?i-3:-1);
+  if(i===1)titleSegment=add('titles',clip.end-1/24,clip.end-1/24,4);
+  if(i>=2&&i<=6) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-2));
 });
 const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
-const reelSegment=segments.find(s=>s.kind==='showreel');
-const chapterPositions=[0,segments[1].offset+1,reelSegment.offset+2,holds[0].offset+1,finale.offset+1];
+const chapterPositions=[0,titleSegment.offset+.3,reelSegment.offset+1,holds[0].offset+1,finale.offset+1];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
-film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4');
+film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4')+'?v=show-return-1';
+const portalWash=document.createElement('div');
+portalWash.className='painting-portal-wash';
+film.after(portalWash);
 // Ten percent overscan permits a visible look-around without exposing empty edges.
-let panX=0,panY=0,panTargetX=0,panTargetY=0,panFrame=0;
+let panX=0,panY=0,panTargetX=0,panTargetY=0,panFrame=0,portalProgress=-1;
 let pointerX=0,pointerY=0,scrolling=false,scrollTimer;
 film.style.transformOrigin='center';
 film.style.transition='none';
 film.style.willChange='transform';
 function animatePan(){
   panFrame=0;
+  if(portalProgress>=0){
+    const eased=portalProgress*portalProgress*(3-2*portalProgress);
+    const scale=1.10+8.4*eased;
+    film.style.transform=`translate3d(${-22*scale*eased}%,${-8*scale*eased}%,0) scale(${scale})`;
+    return;
+  }
   panX+=(panTargetX-panX)*.09;
   panY+=(panTargetY-panY)*.09;
   film.style.transform=`translate3d(${panX}%,${panY}%,0) scale(1.10)`;
   if(Math.abs(panTargetX-panX)+Math.abs(panTargetY-panY)>.002)panFrame=requestAnimationFrame(animatePan);
 }
 function updatePan(){
-  const enabled=!scrolling&&!reducedMotion.matches;
+  const enabled=!scrolling&&!reducedMotion.matches&&journey.dataset.segment!=='showreel'&&journey.dataset.segment!=='portal';
   panTargetX=enabled?pointerX:0;
   panTargetY=enabled?pointerY:0;
   if(!panFrame)panFrame=requestAnimationFrame(animatePan);
@@ -71,7 +88,7 @@ function schedule(){if(!request)request=requestAnimationFrame(render);}
 function render(now){
   request=0;
   if(!ready||document.hidden)return;
-  if(film.seeking&&now-lastSeek<1200)return;
+  if(film.seeking&&now-lastSeek<450)return;
   const time=Math.min(targetTime,film.duration-1/24);
   if(Math.abs(film.currentTime-time)>1/60){lastSeek=now;film.currentTime=time;}
 }
@@ -107,13 +124,9 @@ function syncScroll(){
   const heroOpacity=s.kind==='hero'?1:s===segments[1]?1-clamp(p*5):0;
   heroCopy.style.opacity=heroOpacity;
   heroCopy.inert=heroOpacity<.1;
-  // Studio facts accompany the two water clips, one at a time.
-  const studioStart=clips[1].start+.8;
-  const studioEnd=clips[2].end-.4;
-  const span=(studioEnd-studioStart)/titles.length;
   titles.forEach((title,i)=>{
-    const local=(targetTime-studioStart-i*span)/span;
-    const opacity=s.kind==='travel'?clamp(local*5)*clamp((1-local)*5):0;
+    const local=s.kind==='titles' ? p*titles.length-i : -1;
+    const opacity=s.kind==='titles'?clamp(local*6)*clamp((1-local)*6):0;
     title.style.opacity=opacity;
     title.style.visibility=opacity>0?'visible':'hidden';
     title.style.transform=`translateY(${(1-opacity)*18}px)`;
@@ -121,12 +134,15 @@ function syncScroll(){
   const services=document.getElementById('services-copy');
   services.style.opacity=0;services.inert=true;
   document.getElementById('level-transition').style.visibility='hidden';
-  window.updateGlassScene?.(s.kind==='showreel'?30+p*5:0);
+  window.updateGlassScene?.(s.kind==='showreel'?p:-1);
+  portalProgress=s.kind==='portal'?p:-1;
+  portalWash.style.opacity=s.kind==='portal'?clamp((p-.72)/.23):s.kind==='travel'&&s.offset===portalSegment.offset+portalSegment.weight?1-clamp(p/.18):0;
   document.getElementById('journey-progress').style.transform=`scaleX(${progress})`;
   journey.dataset.progress=progress.toFixed(4);
   journey.dataset.targetTime=targetTime.toFixed(3);
   journey.dataset.segment=s.kind;
-  const chapter=finalVisible?4:position>=holds[0].offset?3:s.kind==='showreel'?2:position>=segments[1].offset?1:0;
+  updatePan();
+  const chapter=finalVisible?4:position>=holds[0].offset?3:position>=approachSegment.offset?2:position>=titleSegment.offset?1:0;
   chapters.forEach((button,i)=>button.setAttribute('aria-current',i===chapter?'step':'false'));
   schedule();
 }

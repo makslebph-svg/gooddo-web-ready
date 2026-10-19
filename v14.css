@@ -1,0 +1,121 @@
+/* GoodDo v14: two new opening passages and aligned gallery pauses */
+#journey{height:2150svh}
+
+.route-hud{
+  min-height:78px;
+  padding:18px clamp(20px,3vw,52px) 26px;
+  grid-template-columns:minmax(140px,1fr) auto minmax(155px,1fr);
+  gap:clamp(16px,2vw,38px)
+}
+.route-hud::before{
+  inset:0 0 -26px;
+  background:linear-gradient(180deg,#10151cba 0%,#10151c75 58%,transparent 100%);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none
+}
+.route-nav{
+  gap:clamp(12px,1.8vw,30px);
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none
+}
+.route-nav button{
+  padding:8px 0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  color:#f9f7f3;
+  font:500 clamp(11px,.9vw,14px)/1.2 Arial,sans-serif;
+  white-space:nowrap;
+  opacity:.8;
+  transition:opacity .2s ease
+}
+.route-nav button[aria-current=step],
+.route-nav button:hover,
+.route-nav button:focus-visible{
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  color:#fff;
+  opacity:1
+}
+.route-nav button[aria-current=step]::after{
+  content:'';
+  display:block;
+  height:1px;
+  margin-top:7px;
+  background:currentColor
+}
+.route-contact{
+  padding:8px 0;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  font:500 clamp(11px,.9vw,14px)/1.2 Arial,sans-serif;
+  white-space:nowrap;
+  text-decoration:none
+}
+.route-contact:hover,.route-contact:focus-visible{
+  background:none;
+  color:#fff;
+  text-decoration:underline;
+  text-underline-offset:8px
+}
+
+.story-title{
+  top:38%;
+  bottom:auto;
+  left:10%;
+  right:10%;
+  max-width:none;
+  text-align:center
+}
+.story-title h2{font-size:clamp(38px,6vw,88px)}
+.story-title p{font-size:clamp(15px,1.5vw,21px)}
+
+.painting-portal-wash{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(ellipse at 72% 60%,#0b5eb1 0%,#07305d 45%,#060c19 100%);
+}
+.glass-scene{z-index:4}
+.reel-end-logo{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:#0b1320ed;
+  color:#fff;
+  font:700 clamp(28px,3.4vw,60px)/1 Arial,sans-serif;
+  letter-spacing:-.075em;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .4s ease;
+  pointer-events:none
+}
+.glass-shell.reel-ended .reel-end-logo{opacity:1;visibility:visible}
+@media(max-width:1050px) and (min-width:761px){
+  .route-hud{grid-template-columns:1fr auto;grid-template-rows:auto auto}
+  .route-nav{grid-column:1/-1;grid-row:2}
+}
+@media(max-width:760px){
+  #journey{height:2350svh}
+  .route-hud{min-height:105px;padding:13px 18px 22px}
+  .route-nav{justify-self:start;gap:17px;overflow-x:auto;max-width:calc(100vw - 36px)}
+  .route-nav button{flex:none;padding:6px 0;font-size:11px}
+  .route-contact{padding:7px 0;font-size:10px}
+  .story-title{left:6%;right:6%;top:42%;bottom:auto}
+  .story-title h2{font-size:clamp(35px,9vw,58px)}
+}

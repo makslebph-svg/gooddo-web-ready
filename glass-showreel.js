@@ -12,13 +12,11 @@ let reelVisible = false;
 const clamp01 = n => Math.max(0, Math.min(1, n));
 const easeOut = p => 1 - Math.pow(1 - p, 3);
 const easeInOut = p => p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
-window.updateGlassScene = time => {
-  const entrance = easeOut(clamp01((time - 30.1) / .85));
-  const exit = easeInOut(clamp01((time - 34.25) / .75));
-  const opacity = entrance * (1 - clamp01((time - 34.45) / .55));
+window.updateGlassScene = progress => {
+  const entrance = easeOut(clamp01(progress / .08));
+  const opacity = entrance;
   glassScene.style.opacity = opacity;
-  glassShell.style.transform = prefersStill.matches ? 'none' : `translateY(${(1-entrance)*180-exit*innerHeight*1.08}px) scale(${.82+.18*entrance-.04*exit}) rotateX(${(1-entrance)*6}deg)`;
-  const available = time >= 30.95 && time <= 34.45;
+  const available = progress >= .06;
   glassScene.inert = !available;
   glassScene.setAttribute('aria-hidden', String(!available));
   if (!available && reelVisible) reel.pause();
@@ -52,6 +50,11 @@ reelSeek.addEventListener('input', () => {
   if (Number.isFinite(reel.duration)) reel.currentTime = Number(reelSeek.value) / 100 * reel.duration;
 });
 for (const event of ['play','pause','ended','timeupdate','loadedmetadata']) reel.addEventListener(event, updateReelControls);
+reel.addEventListener('ended', () => glassShell.classList.add('reel-ended'));
+reel.addEventListener('play', () => glassShell.classList.remove('reel-ended'));
+reel.addEventListener('seeked', () => {
+  if (reel.duration - reel.currentTime > .5) glassShell.classList.remove('reel-ended');
+});
 reelExpand.onclick = async () => {
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
@@ -62,5 +65,4 @@ reelExpand.onclick = async () => {
 document.addEventListener('fullscreenchange', () => {
   reelExpand.setAttribute('aria-label', document.fullscreenElement ? 'Выйти из полноэкранного просмотра' : 'Развернуть шоурил');
 });
-addEventListener('scroll', () => { if (!document.fullscreenElement) reel.pause(); }, {passive:true});
 document.addEventListener('visibilitychange', () => { if (document.hidden) reel.pause(); });
