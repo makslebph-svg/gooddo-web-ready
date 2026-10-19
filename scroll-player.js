@@ -24,15 +24,17 @@ let titleSegment, approachSegment, reelSegment, portalSegment;
 clips.forEach((clip,i) => {
   // Reverse only the daylight clip; all subsequent passages keep their direction.
   if(i===2){
-    // Stop while the painting is still clearly visible in the gallery.
+    // The four titles use the first 1.4 seconds of forward travel through the gallery.
+    const reelPoint=clip.start+1.8;
     const painting=clip.start+3.5;
-    approachSegment=add('approach',clip.start,painting,3.5);
-    reelSegment=add('showreel',painting,painting,6);
-    // Give the painting entry its own scroll range before revealing the next hall.
+    approachSegment=add('approach',titleSegment.end,reelPoint,1.2);
+    reelSegment=add('showreel',reelPoint,reelPoint,6);
+    // Continue straight after the reel, turn right, then enter the painting.
+    add('departure',reelPoint,painting,3.5);
     portalSegment=add('portal',painting,painting,4.5);
     add('travel',clip.start+4.5,clip.end-1/24,3.5);
   }else add(i===0?'hero':'travel',i===0?clip.end-1/24:clip.start,i===0?clip.start:clip.end-1/24,clip.end-clip.start,i>=3&&i<=7?i-3:-1);
-  if(i===1)titleSegment=add('titles',clip.end-1/24,clip.end-1/24,4);
+  if(i===1)titleSegment=add('titles',clip.end-1/24,clips[i+1].start+1.4,4);
   if(i>=2&&i<=6) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-2));
 });
 const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
