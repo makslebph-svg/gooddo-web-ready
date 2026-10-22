@@ -1,4 +1,4 @@
-// A single paused film follows the route; one gesture advances to the next scene.
+// The atrium holds at rest; the first scroll begins a gradual descent.
 const film = document.getElementById('scroll-film');
 const journey = document.getElementById('journey');
 const loading = document.getElementById('loading');
@@ -12,6 +12,7 @@ const titles = [...document.querySelectorAll('.story-title')];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const clamp = n => Math.max(0,Math.min(1,n));
 const clips = window.GOODDO_VIDEO_CLIPS;
+const teamConfig=window.GOODDO_TEAM;
 const segments = [];
 let total = 0;
 function add(kind, start, end, weight, hall = -1) {
@@ -20,78 +21,55 @@ function add(kind, start, end, weight, hall = -1) {
   return segment;
 }
 const holds=[];
-let titleSegment, approachSegment, reelSegment, portalSegment;
+let titleSegment, approachSegment, reelSegment;
+const descentEnd=clips[0].start+1.25;
+add('hero',clips[0].start,descentEnd,4);
 clips.forEach((clip,i) => {
-  // Reverse only the daylight clip; all subsequent passages keep their direction.
-  if(i===2){
+  // The team room now follows the final portfolio hall. Its own exit slot
+  // replaces the old show-room-to-atrium passage in this route.
+  if(i===clips.length-1)return;
+  if(i===1){
     // The four titles use the first 1.4 seconds of forward travel through the gallery.
     const reelPoint=clip.start+1.8;
-    const painting=clip.start+3.5;
     approachSegment=add('approach',titleSegment.end,reelPoint,1.2);
     reelSegment=add('showreel',reelPoint,reelPoint,6);
-    // Continue straight after the reel, turn right, then enter the painting.
-    add('departure',reelPoint,painting,3.5);
-    portalSegment=add('portal',painting,painting,4.5);
-    add('travel',clip.start+4.5,clip.end-1/24,3.5);
-  }else add(i===0?'hero':'travel',i===0?clip.end-1/24:clip.start,i===0?clip.start:clip.end-1/24,clip.end-clip.start,i>=3&&i<=7?i-3:-1);
-  if(i===1)titleSegment=add('titles',clip.end-1/24,clips[i+1].start+1.4,4);
-  if(i>=2&&i<=6) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-2));
+    // Play the entire generated turn and entry through the painting after the reel.
+    add('departure',reelPoint,clip.start+3.5,3.5);
+    add('portal',clip.start+3.5,clip.end-1/24,4.5);
+  }else add('travel',i===0?descentEnd:clip.start,clip.end-1/24,clip.end-clip.start,i>=2&&i<=6?i-2:-1);
+  if(i===0)titleSegment=add('titles',clip.end-1/24,clips[i+1].start+1.4,4);
+  if(i>=1&&i<=5) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-1));
 });
+const lastPortfolioFrame=clips.at(-2).end-1/24;
+const atriumFrame=clips.at(-1).end-1/24;
+const teamEntry=add('team-entry',lastPortfolioFrame,lastPortfolioFrame,2.2);
+const teamHolds=[];
+teamConfig.people.forEach((person,index)=>{
+  const hold=add('team-hold',lastPortfolioFrame,lastPortfolioFrame,3.2);
+  hold.teamIndex=index;teamHolds.push(hold);
+  if(index<teamConfig.people.length-1){
+    const travel=add('team-travel',lastPortfolioFrame,lastPortfolioFrame,teamConfig.clips[index].end-teamConfig.clips[index].start);
+    travel.teamIndex=index;travel.teamFrom=person.time;travel.teamTo=teamConfig.people[index+1].time;
+  }
+});
+const teamExit=add('team-exit',atriumFrame,atriumFrame,2.2);
 const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
 const stagePositions=[
   0,
   ...titles.map((_,i)=>titleSegment.offset+titleSegment.weight*(i+.5)/titles.length),
   reelSegment.offset+reelSegment.weight*.5,
   ...holds.map(hold=>hold.offset+hold.weight*.68),
+  ...teamHolds.map(hold=>hold.offset+hold.weight*.68),
   finale.offset+finale.weight*.42,
   finale.offset+finale.weight*.94
 ];
-const chapterPositions=[stagePositions[0],stagePositions[1],stagePositions[5],stagePositions[6],stagePositions[11]];
+const chapterPositions=[stagePositions[0],stagePositions[1],stagePositions[5],stagePositions[6],teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
-film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4')+'?v=show-return-1';
+film.poster='assets/hero-static.webp';
+film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4')+'?v=flux-route-23';
 const portalWash=document.createElement('div');
 portalWash.className='painting-portal-wash';
 film.after(portalWash);
-// Ten percent overscan permits a visible look-around without exposing empty edges.
-let panX=0,panY=0,panTargetX=0,panTargetY=0,panFrame=0,portalProgress=-1;
-let pointerX=0,pointerY=0,scrolling=false,scrollTimer;
-film.style.transformOrigin='center';
-film.style.transition='none';
-film.style.willChange='transform';
-function animatePan(){
-  panFrame=0;
-  if(portalProgress>=0){
-    const eased=portalProgress*portalProgress*(3-2*portalProgress);
-    const scale=1.10+8.4*eased;
-    film.style.transform=`translate3d(${-22*scale*eased}%,${-8*scale*eased}%,0) scale(${scale})`;
-    return;
-  }
-  panX+=(panTargetX-panX)*.09;
-  panY+=(panTargetY-panY)*.09;
-  film.style.transform=`translate3d(${panX}%,${panY}%,0) scale(1.10)`;
-  if(Math.abs(panTargetX-panX)+Math.abs(panTargetY-panY)>.002)panFrame=requestAnimationFrame(animatePan);
-}
-function updatePan(){
-  const enabled=!scrolling&&!reducedMotion.matches&&journey.dataset.segment!=='showreel'&&journey.dataset.segment!=='portal';
-  panTargetX=enabled?pointerX:0;
-  panTargetY=enabled?pointerY:0;
-  if(!panFrame)panFrame=requestAnimationFrame(animatePan);
-}
-film.style.transform='scale(1.10)';
-addEventListener('pointermove',event=>{
-  if(event.pointerType==='touch'||event.buttons)return;
-  pointerX=-(clamp(event.clientX/innerWidth)-.5)*9;
-  pointerY=-(clamp(event.clientY/innerHeight)-.5)*5;
-  updatePan();
-},{passive:true,capture:true});
-function resetPan(){pointerX=0;pointerY=0;updatePan();}
-document.documentElement.addEventListener('pointerleave',resetPan);
-addEventListener('blur',resetPan);
-reducedMotion.addEventListener('change',updatePan);
-addEventListener('scroll',()=>{
-  scrolling=true;updatePan();clearTimeout(scrollTimer);
-  scrollTimer=setTimeout(()=>{scrolling=false;updatePan();},180);
-},{passive:true});
 film.muted=true;
 film.load();
 function schedule(){if(!request)request=requestAnimationFrame(render);}
@@ -111,7 +89,10 @@ function flyTo(position){
   const from=scrollY,to=routeTop(position),distance=Math.abs(to-from);
   if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});return;}
   const span=Math.abs(position-routePosition());
-  const duration=Math.min(4300,Math.max(650,span>5?1600+span*210:650+span*160));
+  const current=routePosition();
+  const insideTeam=current>=teamEntry.offset&&current<=teamExit.offset&&position>=teamEntry.offset&&position<=teamExit.offset;
+  const crossesTeamTravel=insideTeam&&segments.some(s=>s.kind==='team-travel'&&s.offset<Math.max(position,current)&&s.offset+s.weight>Math.min(position,current));
+  const duration=crossesTeamTravel?6000:Math.min(4300,Math.max(650,span>5?1600+span*210:650+span*160));
   const started=performance.now();
   flightTarget=position;
   const frame=now=>{
@@ -183,6 +164,7 @@ function syncScroll(){
   const s=segments.find(s=>position<s.offset+s.weight)||segments.at(-1);
   const p=clamp((position-s.offset)/s.weight);
   targetTime=s.start+(s.end-s.start)*p;
+  window.updateTeamRoute?.(s,p);
   const hallVisible=s.kind==='hall';
   portfolio.style.opacity=hallVisible?1:0;
   portfolio.style.transform='none';
@@ -200,7 +182,7 @@ function syncScroll(){
   loopHero.style.visibility=reveal>0?'visible':'hidden';
   loopHero.setAttribute('aria-hidden',String(reveal===0));
   film.style.opacity=1;
-  const heroOpacity=s.kind==='hero'?1:s===segments[1]?1-clamp(p*5):0;
+  const heroOpacity=s.kind==='hero'?1-clamp((p-.1)/.75):0;
   heroCopy.style.opacity=heroOpacity;
   heroCopy.inert=heroOpacity<.1;
   titles.forEach((title,i)=>{
@@ -214,14 +196,12 @@ function syncScroll(){
   services.style.opacity=0;services.inert=true;
   document.getElementById('level-transition').style.visibility='hidden';
   window.updateGlassScene?.(s.kind==='showreel'?p:-1);
-  portalProgress=s.kind==='portal'?p:-1;
-  portalWash.style.opacity=s.kind==='portal'?clamp((p-.72)/.23):s.kind==='travel'&&s.offset===portalSegment.offset+portalSegment.weight?1-clamp(p/.18):0;
+  portalWash.style.opacity=0;
   document.getElementById('journey-progress').style.transform=`scaleX(${progress})`;
   journey.dataset.progress=progress.toFixed(4);
   journey.dataset.targetTime=targetTime.toFixed(3);
   journey.dataset.segment=s.kind;
-  updatePan();
-  const chapter=finalVisible?4:position>=holds[0].offset?3:position>=approachSegment.offset?2:position>=titleSegment.offset?1:0;
+  const chapter=finalVisible?5:s.kind.startsWith('team-')?4:position>=holds[0].offset?3:position>=approachSegment.offset?2:position>=titleSegment.offset?1:0;
   chapters.forEach((button,i)=>button.setAttribute('aria-current',i===chapter?'step':'false'));
   schedule();
 }
@@ -236,3 +216,12 @@ chapters.forEach((button,i)=>button.addEventListener('click',()=>goTo(chapterPos
 document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(button.dataset.hall)].offset+1)));
 document.querySelectorAll('[data-walk]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(portfolio.dataset.hallIndex||0)].offset+holds[0].weight*.68)));
 syncScroll();
+function restoreRouteSection(){
+  const sections={home:0,studio:1,showreel:2,portfolio:3,team:4,contacts:5};
+  const key=location.hash.slice(1);
+  if(Object.hasOwn(sections,key)){
+    stopFlight();scrollTo({top:routeTop(chapterPositions[sections[key]]),behavior:'instant'});syncScroll();
+  }
+}
+film.addEventListener('loadeddata',restoreRouteSection);
+addEventListener('hashchange',restoreRouteSection);

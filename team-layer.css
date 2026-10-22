@@ -1,0 +1,25 @@
+/* The team room belongs to the main scroll route, with no separate controls. */
+.team-room{position:absolute;inset:0;z-index:3;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;isolation:isolate}
+.team-room .team-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+.team-room #team-film{opacity:0;z-index:1}
+.team-room #team-film.ready{opacity:1}
+.team-room .team-fallback{z-index:0}
+.team-caption{
+  position:absolute;z-index:2;left:4vw;bottom:clamp(24px,5.5vh,60px);
+  width:min(540px,calc(100% - 48px));padding:22px 28px 24px;
+  border:1px solid rgba(255,255,255,.48);border-radius:20px;
+  background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(226,238,243,.14));
+  color:#14242d;backdrop-filter:blur(22px) saturate(.88);
+  -webkit-backdrop-filter:blur(22px) saturate(.88);
+  box-shadow:inset 0 1px rgba(255,255,255,.5),0 16px 55px rgba(23,39,46,.1);
+  opacity:0;visibility:hidden;pointer-events:none
+}
+.team-caption[data-side=right]{left:auto;right:4vw}
+.team-caption h2{font:700 clamp(30px,3.4vw,52px)/1.08 Oswald,sans-serif;text-transform:uppercase;margin:0 0 10px;text-wrap:balance}
+.team-caption p{font:clamp(15px,1.3vw,19px)/1.45 Arial,sans-serif;max-width:40ch;margin:0;color:#20323b}
+@media(max-width:760px){
+  .team-room .team-media{object-position:var(--team-frame-x,45%) 50%}
+  .team-caption,.team-caption[data-side=right]{left:18px;right:18px;bottom:26px;width:auto;padding:17px 20px;border-radius:16px}
+  .team-caption h2{font-size:30px;margin-bottom:7px}
+  .team-caption p{font-size:14px;line-height:1.45}
+}

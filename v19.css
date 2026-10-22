@@ -1,0 +1,38 @@
+/* The opening image stays still until the first scroll gesture. */
+.stage::before{background-image:url('assets/hero-static.webp')}
+
+/* Translucent frosted glass over the returned atrium. */
+.final-content{
+  background:linear-gradient(128deg,rgba(249,251,251,.67),rgba(238,245,247,.52) 58%,rgba(255,255,255,.58));
+  border:1px solid rgba(255,255,255,.76);
+  box-shadow:0 26px 90px rgba(17,32,39,.27),inset 0 1px rgba(255,255,255,.83);
+  backdrop-filter:blur(34px) saturate(1.05);
+  -webkit-backdrop-filter:blur(34px) saturate(1.05);
+}
+
+/* Frosted bases below images and video windows. */
+.art .card-caption,
+.category-caption,
+.category-bottom,
+.project-media-caption{
+  background:rgba(20,33,45,.62);
+  color:#f7fafb;
+  backdrop-filter:blur(24px) saturate(.9);
+  -webkit-backdrop-filter:blur(24px) saturate(.9);
+  box-shadow:inset 0 1px rgba(255,255,255,.25);
+}
+.art .card-caption{padding:15px 18px 17px}
+.category-caption{padding:17px 15px 13px;border-radius:0 0 14px 14px}
+.category-bottom{padding:12px 15px 8px;border-top-color:rgba(255,255,255,.16);border-radius:0 0 14px 14px}
+.project-media-caption{padding:14px 15px;border-radius:0 0 14px 14px}
+.glass-caption{
+  background:rgba(246,249,249,.72);
+  color:#172730;
+  backdrop-filter:blur(22px) saturate(.9);
+  -webkit-backdrop-filter:blur(22px) saturate(.9);
+  box-shadow:inset 0 1px rgba(255,255,255,.85);
+}
+@media(max-width:760px){
+  .art .card-caption{padding:12px 13px 14px}
+  .category-caption{padding:14px 12px 11px}
+}

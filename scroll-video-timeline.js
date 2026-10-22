@@ -1,42 +1,37 @@
 window.GOODDO_VIDEO_CLIPS = [
   {
-    "name": "1-1",
-    "start": 0,
-    "end": 4
-  },
-  {
     "name": "atrium-to-gallery",
-    "start": 4,
-    "end": 10
+    "start": 0,
+    "end": 5
   },
   {
     "name": "gallery-to-ai",
-    "start": 10,
-    "end": 16
+    "start": 5,
+    "end": 13
   },
   {
-    "name": "4-5",
-    "start": 16,
-    "end": 22
+    "name": "ai-to-scripted",
+    "start": 13,
+    "end": 21
   },
   {
-    "name": "5-6",
-    "start": 22,
-    "end": 28
+    "name": "scripted-to-reportage",
+    "start": 21,
+    "end": 29
   },
   {
-    "name": "6-7",
-    "start": 28,
-    "end": 34
+    "name": "reportage-to-graphics",
+    "start": 29,
+    "end": 37
   },
   {
-    "name": "7-8",
-    "start": 34,
-    "end": 40
+    "name": "graphics-to-show",
+    "start": 37,
+    "end": 45
   },
   {
     "name": "show-to-atrium",
-    "start": 40,
-    "end": 46
+    "start": 45,
+    "end": 53
   }
 ];
