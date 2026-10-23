@@ -59,7 +59,6 @@ const teamExit=add('team-exit',atriumFrame,atriumFrame,2.2);
 const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
 const stagePositions=[
   0,
-  ...titles.map((_,i)=>titleSegment.offset+titleSegment.weight*(i+.5)/titles.length),
   reelSegment.offset+reelSegment.weight*.5,
   ...holds.map(hold=>hold.offset+hold.weight*.68),
   clientsHold.offset+clientsHold.weight*.5,
@@ -67,7 +66,7 @@ const stagePositions=[
   finale.offset+finale.weight*.42,
   finale.offset+finale.weight*.94
 ];
-const chapterPositions=[stagePositions[0],stagePositions[1],stagePositions[5],stagePositions[6],teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
+const chapterPositions=[0,titleSegment.offset,reelSegment.offset+reelSegment.weight*.5,holds[0].offset+holds[0].weight*.68,teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
 let lastRoutePosition=0;
 film.poster='assets/hero-static.webp';
@@ -88,11 +87,17 @@ function render(now){
 const routeTop=position=>journey.offsetTop+position/total*(journey.offsetHeight-innerHeight);
 const routePosition=()=>clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight))*total;
 let flight=0,flightTarget=-1,lastFlightEnd=-Infinity;
-function stopFlight(){if(flight)cancelAnimationFrame(flight);flight=0;flightTarget=-1;}
-function flyTo(position){
+function stopFlight(){if(flight)cancelAnimationFrame(flight);flight=0;flightTarget=-1;window.stopStudioSequence?.();}
+function flyTo(position,options={}){
   stopFlight();
   const from=scrollY,to=routeTop(position),distance=Math.abs(to-from);
-  if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});return;}
+  if(!options.skipStudio&&!reducedMotion.matches&&Math.abs(position-chapterPositions[2])<.01&&routePosition()<reelSegment.offset){
+    const current=routePosition();
+    const begin=()=>window.playStudioSequence?.(current<titleSegment.offset?0:current);
+    if(current<titleSegment.offset-.01){flyTo(titleSegment.offset,{skipStudio:true,onComplete:begin});return}
+    begin();return;
+  }
+  if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});options.onComplete?.();return;}
   const span=Math.abs(position-routePosition());
   const current=routePosition();
   // Allocate motion time by footage travelled, not by the scroll height of a hold.
@@ -119,11 +124,16 @@ function flyTo(position){
     const eased=p*p*(3-2*p);
     scrollTo({top:routeTop(positionAt(eased)),behavior:'instant'});
     if(p<1)flight=requestAnimationFrame(frame);
-    else{flight=0;flightTarget=-1;lastFlightEnd=performance.now();syncScroll();}
+    else{flight=0;flightTarget=-1;lastFlightEnd=performance.now();syncScroll();options.onComplete?.();}
   };
   flight=requestAnimationFrame(frame);
 }
-function goTo(position){flyTo(position);}
+function goTo(position){
+  if(position===chapterPositions[1]&&!reducedMotion.matches){
+    stopFlight();scrollTo({top:routeTop(titleSegment.offset),behavior:'instant'});syncScroll();window.playStudioSequence?.(0);return;
+  }
+  flyTo(position);
+}
 function advanceStage(direction){
   if(flight){
     // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
@@ -209,6 +219,7 @@ function syncScroll(){
   document.body.classList.toggle('route-flight',!!flight);
   document.body.classList.toggle('in-cases',s.kind==='hall');
   targetTime=s.start+(s.end-s.start)*p;
+  window.updateStudioSequence?.(s,p);
   window.updateTeamRoute?.(s,p);
   window.GooddoClients?.render(s.kind==='clients'?1:s.kind==='clients-entry'?p:0);
   window.updateCasesNavigation?.(s,!!flight);
