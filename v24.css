@@ -1,0 +1,113 @@
+/* GoodDo v24 — shared editorial type, clear actions and restrained glass */
+:root{--page-gutter:clamp(20px,3.5vw,56px);--ink:#18272e;--paper:#f5f2e9;--panel-radius:14px}
+button,a,input{touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:2px solid currentColor;outline-offset:6px}
+.route-hud{padding-left:var(--page-gutter);padding-right:var(--page-gutter);grid-template-columns:120px minmax(0,1fr) 158px;gap:18px}
+.route-hud .route-nav{gap:clamp(14px,1.7vw,27px)}
+.route-hud .route-nav button,.route-hud .route-contact,.route-hud .route-brand{text-shadow:none}
+.route-hud .route-nav button{font-size:13px}
+.cases-subnav{position:absolute;top:70px;left:var(--page-gutter);right:var(--page-gutter);display:flex;justify-content:center;align-items:center;gap:clamp(20px,3vw,44px);padding:12px 0 15px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s,visibility .2s .18s;background:none;border:0;z-index:2}
+.cases-subnav button{position:relative;padding:8px 0;border:0;border-radius:0;background:none;box-shadow:none;font:400 13px/1.3 Arial,sans-serif;color:#f5f2e9;white-space:nowrap;opacity:.72}
+.cases-subnav button:hover,.cases-subnav button:focus-visible,.cases-subnav button[aria-current=step]{opacity:1}
+.cases-subnav button[aria-current=step]::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor}
+body.in-cases .cases-subnav,.route-hud.cases-menu-open .cases-subnav,.route-hud:has(#cases-nav-trigger:hover) .cases-subnav,.route-hud:has(#cases-nav-trigger:focus-visible) .cases-subnav,.cases-subnav:hover,.cases-subnav:focus-within{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s}
+body.route-flight .cases-subnav{opacity:0;visibility:hidden;pointer-events:none}
+/* A quiet, broad wash keeps type readable without letter-shaped shadows. */
+.story-title{left:var(--page-gutter);right:var(--page-gutter);top:36%;bottom:auto;color:var(--ink);text-shadow:none!important;filter:none;text-align:center}
+.story-title h2{font:700 clamp(38px,6.1vw,88px)/1.08 Oswald,sans-serif;letter-spacing:-.02em;max-width:19ch;margin:0 auto 20px;text-wrap:balance;text-shadow:none}
+.story-title p{font:400 clamp(16px,1.7vw,23px)/1.45 Arial,sans-serif;max-width:47ch;margin:0 auto;color:#283a41;text-wrap:balance;text-shadow:none}
+.glass-shell,.project-media,.art,.expanded .art,.category-card,.final-content,.team-caption{border-radius:var(--panel-radius)}
+.glass-picture{border-radius:13px 13px 0 0}
+.project-layout video,#project-poster{border-radius:8px}
+.project-media-caption,.category-caption,.category-bottom{border-radius:0 0 8px 8px}
+.art .card-caption{border-radius:0 0 13px 13px}
+#project{width:min(1600px,100vw);padding:76px var(--page-gutter) 30px}
+#project::backdrop{background:rgba(9,17,24,.81);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#project .project-layout{display:grid;grid-template-columns:minmax(175px,1fr) minmax(0,3.5fr) minmax(175px,1fr);gap:clamp(24px,2.5vw,42px);align-items:center}
+#project .project-layout>aside{display:block;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;cursor:default}
+#project .project-layout h3{font:600 clamp(24px,2.2vw,34px)/1.16 Oswald,sans-serif;margin:18px 0 22px;overflow-wrap:normal;text-wrap:balance}
+#project .project-layout p{display:block;font:400 14px/1.65 Arial,sans-serif;color:#f0f2f3;margin:10px 0 24px}
+#project .project-layout .eyebrow{font:500 10px/1.5 Arial,sans-serif;letter-spacing:.11em;color:#b6c1c8}
+#project .project-tag{margin-top:24px;color:#b6c1c8;font-size:11px;line-height:1.5;letter-spacing:.04em}
+#project .project-services{border:0;padding:0;margin:22px 0 0;color:#c5ced3;font-size:12px;line-height:1.6}
+#project .project-services:empty{display:none}
+#project .project-source{display:inline-block;border:0;border-bottom:1px solid #e9f0f3;background:none;border-radius:0;box-shadow:none;padding:6px 0;color:#f5f2e9;font:500 13px/1.5 Arial,sans-serif;margin-top:24px;text-decoration:none;cursor:pointer;transition:opacity .18s}
+#project .project-source:hover{opacity:.75}
+#project .project-nav button{border:0;border-radius:0;padding:10px 0;background:none;color:#f5f2e9;border-bottom:1px solid #ffffff65;transition:border-color .2s}
+#project .project-nav button:hover{border-color:#fff}
+#project .project-media{padding:9px;box-shadow:0 18px 65px #0004,inset 0 1px #fff5}
+#project[open] .project-layout>aside{animation:v24-text-in .35s .1s both}
+@keyframes v24-text-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(max-width:1190px){
+ .route-hud{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;row-gap:19px;min-height:126px;padding-top:18px;padding-bottom:25px}
+ .route-hud .route-brand{grid-column:1;grid-row:1}
+ .route-hud .route-contact{grid-column:2;grid-row:1}
+ .route-hud .route-nav{grid-column:1/-1;grid-row:2;justify-self:center;gap:24px}
+ .cases-subnav{top:105px}
+ #project .project-layout{grid-template-columns:minmax(150px,1fr) minmax(0,2.6fr) minmax(150px,1fr);gap:22px}
+ #project .project-layout h3{font-size:24px}
+ #project .project-layout p{font-size:13px}
+}
+@media(max-width:850px){
+ #project .project-layout{grid-template-columns:1fr 1fr;gap:28px}
+ #project .project-media{grid-column:1/-1;grid-row:1}
+ #project .project-description{grid-column:1;grid-row:2}
+ #project .project-details{grid-column:2;grid-row:2}
+}
+@media(max-width:760px){
+ .route-hud{padding:16px 20px 24px;min-height:119px}
+ .route-hud .route-nav{justify-self:start;width:100%;max-width:calc(100vw - 40px);gap:22px;padding-bottom:12px;margin-bottom:-12px}
+ .route-hud .route-nav button{font-size:12px}
+ .route-hud .route-contact{right:20px}
+ .cases-subnav{top:105px;left:20px;right:0;justify-content:flex-start;gap:23px;padding:10px 28px 14px 0;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+ .cases-subnav button{font-size:12px;flex:none}
+ .cases-subnav::-webkit-scrollbar{display:none}
+ .story-title{left:24px;right:24px;top:36%}
+ .story-title h2{font-size:clamp(36px,10vw,58px);max-width:14ch;margin-bottom:18px}
+ .story-title p{font-size:16px;line-height:1.45;max-width:30ch}
+ #project{padding:65px 24px 30px}
+ #project .project-layout{display:flex;flex-direction:column;gap:28px}
+ #project .project-media{order:0;width:100%;padding:6px}
+ #project .project-description,#project .project-details{width:100%}
+ #project .project-layout h3{font-size:30px;margin:12px 0 20px}
+ #project .project-layout p{font-size:15px;line-height:1.6}
+ #project .project-layout .eyebrow{font-size:10px}
+ #project .project-source{font-size:15px;margin-top:15px}
+ #project .project-nav{width:100%;gap:16px;margin-top:30px}
+ .team-caption,.team-caption[data-side=right]{left:20px;right:20px;border-radius:14px}
+}
+@media(prefers-reduced-motion:reduce){#project[open] .project-layout>aside{animation:none}.cases-subnav{transition:none}}
+/* Hover bridge between the Cases trigger and its second navigation row. */
+.cases-subnav::before{content:'';position:absolute;left:0;right:0;top:-24px;height:24px}
+
+/* Titles occupy the same centred text grid at every studio stop */
+.story-title{max-width:none}
+.demo .walk-description,.demo .walk-description h4,.demo #walk-instruction,.demo .demo-head,.demo .gallery-kicker{ text-shadow:none!important }
+.demo::before{background:linear-gradient(0deg,rgba(12,23,30,.65),rgba(12,23,30,.12) 44%,transparent 64%)!important;opacity:1!important;pointer-events:none}
+.hero-copy,.loop-hero{ text-shadow:none }
+#clients-scene{background:linear-gradient(180deg,rgba(238,235,223,.12),rgba(238,235,223,.38)),url('assets/client-hall.webp') center/cover}
+.final-content.final-project h2{max-width:none}
+#final-scene{background:linear-gradient(90deg,#131d2312,transparent 58%,#101c2612),url('assets/hero-static.webp') center/cover}
+#clients-scene .client-logo img{filter:grayscale(1) contrast(1.6);mix-blend-mode:multiply}
+.cases-subnav button{opacity:.86;font-size:14px}
+.story-titles::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 12%,rgba(255,250,237,.3) 39%,rgba(255,250,237,.3) 62%,transparent 84%);opacity:var(--studio-wash,0);transition:opacity .25s;pointer-events:none}
+@media(max-width:760px){
+ .demo .demo-head{top:166px!important;left:20px!important;right:20px!important}
+ .demo .walk-description{left:20px;right:20px;bottom:48px;max-width:none}
+ .demo .walk-description h4{font-size:30px;margin-bottom:8px}
+ .demo #walk-instruction{font-size:13px;line-height:1.4;max-width:32ch}
+ .demo .demo-hint{bottom:13px!important;max-width:none;font-size:0!important}
+ .demo .demo-hint::after{content:'СВАЙП — ВЫБОР · НАЖАТИЕ — ПРОСМОТР';font:9px/1.5 Arial,sans-serif;letter-spacing:.5px}
+ .demo .carousel-count{bottom:135px}
+ .team-room .team-ramil-still{object-position:32% 50%}
+ body.in-cases .route-hud::before{background:linear-gradient(180deg,#0d1825c2,#0d182596 65%,transparent);inset:0 0 -80px}
+}
+body .gooddo-project-form .form-field-label{position:static;display:block;width:auto;height:auto;clip-path:none;overflow:visible;font:12px/1.4 Arial,sans-serif;color:#405159;margin-bottom:3px}
+@media(max-width:760px){
+ #final-scene{padding:126px 0 20px}
+ #final-scene .final-content.final-project{max-height:calc(100svh - 146px)}
+}
+
+/* Shared menu wash: dark translucent at the top, continuously fading to zero */
+#journey .route-hud::before{inset:0 0 -105px;background:linear-gradient(180deg,rgba(8,18,29,.88) 0%,rgba(8,18,29,.68) 35%,rgba(8,18,29,.27) 68%,rgba(8,18,29,0) 100%);border:0;border-radius:0;box-shadow:none;pointer-events:none}
+@media(max-width:760px){#journey .route-hud::before{inset:0 0 -82px}}

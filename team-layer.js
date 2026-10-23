@@ -3,6 +3,12 @@
   const room=document.getElementById('team-room');
   const film=document.getElementById('team-film');
   const fallback=document.getElementById('team-fallback');
+  const ramilStill=document.createElement('img');
+  ramilStill.className='team-media team-ramil-still';
+  ramilStill.src=config.people[0].poster;
+  ramilStill.alt='Рамиль с улыбкой толкает тяжёлую раму с инженерным рисунком';
+  ramilStill.style.zIndex='1';ramilStill.style.opacity='0';
+  film.after(ramilStill);
   const captions=[...room.querySelectorAll('[data-person]')];
   const clamp=p=>Math.max(0,Math.min(1,p));
   const ease=p=>p*p*(3-2*p);
@@ -24,16 +30,20 @@
     const active=segment.kind.startsWith('team-');
     if(active||(segment.kind==='hall'&&segment.hall===4))load();
     let opacity=0,index=segment.teamIndex||0,crop=config.people[index].crop;
-    if(segment.kind==='team-entry'){opacity=ease(p);desired=0;index=0}
-    else if(segment.kind==='team-hold'){opacity=1;desired=config.people[index].time}
+    let stillOpacity=0;
+    if(segment.kind==='team-entry'){opacity=ease(p);desired=config.people[1].time;index=0;stillOpacity=1}
+    else if(segment.kind==='team-hold'){opacity=1;desired=config.people[index].time;if(index===0){stillOpacity=1;desired=config.people[1].time}}
     else if(segment.kind==='team-travel'){
       opacity=1;desired=segment.teamFrom+(segment.teamTo-segment.teamFrom)*p;
       crop=config.people[index].crop+(config.people[index+1].crop-config.people[index].crop)*p;
+      // New still replaces the old pose; use a finite dissolve until a matching clip exists.
+      if(segment.teamIndex===0){desired=config.people[1].time;stillOpacity=1-ease(p)}
       if(p>.5)index++;
     }else if(segment.kind==='team-exit'){
       opacity=1-ease(p);index=config.people.length-1;desired=config.people[index].time;crop=config.people[index].crop;
     }
     room.style.opacity=opacity;room.style.visibility=opacity>0?'visible':'hidden';
+    ramilStill.style.opacity=stillOpacity;
     room.setAttribute('aria-hidden',String(!active));room.inert=!active;
     room.style.setProperty('--team-frame-x',crop+'%');
     const poster=config.people[index].poster;

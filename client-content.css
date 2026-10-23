@@ -1,0 +1,53 @@
+/* Two independent collections of frosted cards in the museum space */
+.clients-scene{position:absolute;inset:0;z-index:6;opacity:0;visibility:hidden;pointer-events:none;color:#f5f2e9;isolation:isolate}
+.clients-scene::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0e1b2d62,#13233738 48%,#101e31a8);pointer-events:none}
+.clients-scroll{position:absolute;inset:106px 0 20px;overflow:hidden;outline-offset:-6px}
+.clients-content{position:relative;width:min(1560px,92vw);height:100%;margin:auto;display:flex;flex-direction:column;gap:22px}
+.clients-heading{padding:0;border:0;display:flex;align-items:end;justify-content:space-between;gap:36px;flex:none}
+.clients-heading h2{font:500 clamp(38px,4vw,64px)/1.08 Oswald,sans-serif;text-transform:uppercase;margin:9px 0 0;letter-spacing:-.02em;text-shadow:none}
+.clients-heading p{max-width:330px;margin:0 0 5px;font:14px/1.6 Arial,sans-serif;color:#f1f1e8}
+.clients-heading .eyebrow{font-size:10px;letter-spacing:1.6px;color:#eeeae0}
+.clients-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:clamp(26px,4vw,70px);flex:1;min-height:0}
+.clients-column{display:flex;flex-direction:column;min-height:0;min-width:0}
+.clients-column-heading{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:0 12px 12px;flex:none}
+.clients-column-heading h3{font:400 clamp(20px,1.8vw,28px)/1.2 Oswald,sans-serif;text-transform:uppercase;margin:0}
+.clients-column-heading>span{font:11px/1.4 Arial,sans-serif;color:#e2e5e7;white-space:nowrap}
+.clients-pane{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#f5f2e980 #f5f2e912;scrollbar-gutter:stable;outline-offset:-2px;padding:10px 13px 20px;perspective:1100px}
+.client-logos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.client-float-card{position:relative;border:1px solid #ffffffa6;border-radius:14px;background:linear-gradient(135deg,rgba(250,248,241,.81),rgba(241,244,243,.6));color:#1c2e36;backdrop-filter:blur(22px) saturate(.85);-webkit-backdrop-filter:blur(22px) saturate(.85);box-shadow:0 12px 25px -12px #05132580,inset 0 1px #ffffffc2;transform:perspective(1100px) translateY(0) rotateX(0deg) rotateY(0deg);transform-origin:center;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;isolation:isolate}
+.client-float-card::after{content:'';position:absolute;inset:0;z-index:0;border-radius:inherit;background:radial-gradient(ellipse at var(--glint-x,50%) var(--glint-y,25%),#ffffff8c,transparent 67%);opacity:0;pointer-events:none;transition:opacity .25s}
+.client-float-card>*{position:relative;z-index:1}
+.client-logo{height:clamp(90px,11.5vh,124px);display:grid;place-items:center;padding:18px 24px;cursor:default}
+.client-logo img{display:block;width:100%;height:100%;max-width:200px;max-height:68px;object-fit:contain;mix-blend-mode:multiply}
+.client-reviews{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.client-review{padding:clamp(20px,2vw,30px);display:flex;flex-direction:column;gap:20px;cursor:default}
+.client-review blockquote{font:400 clamp(15px,1.05vw,17px)/1.65 Arial,sans-serif;margin:0;text-wrap:pretty}
+.review-author{padding-top:15px;border-top:1px solid #243c4826;display:grid;gap:5px}
+.review-author strong{font:600 14px/1.4 Arial,sans-serif}
+.review-author span{font:12px/1.5 Arial,sans-serif;color:#405760}
+.client-review details{font:14px/1.65 Arial,sans-serif}
+.client-review summary{cursor:pointer;text-decoration:underline;text-underline-offset:4px;outline-offset:5px}
+.client-review details p{margin:14px 0 0}
+.clients-end{display:flex;align-items:center;justify-content:center;gap:20px;flex:none;padding:8px 12px;font:12px/1.5 Arial,sans-serif;color:#e3e7e9;text-align:center}
+.clients-end button{padding:7px 0;background:none;border:0;border-bottom:1px solid #f5f2e980;color:#f5f2e9;font:14px/1.5 Arial,sans-serif;text-align:right}
+.clients-end button:hover{border-bottom-color:#fff}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .client-float-card:hover{transform:perspective(1100px) translateY(-5px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));box-shadow:0 24px 40px -16px #041123b3,inset 0 1px #fff;border-color:#fff;transition:transform .12s ease-out,box-shadow .2s ease,border-color .2s}
+ .client-float-card:hover::after{opacity:1}
+ .client-review:has(details:focus-within){transform:none}
+}
+@media(max-width:1190px){.clients-scroll{top:139px}.clients-content{gap:18px}.clients-heading h2{font-size:45px}.clients-heading p{font-size:13px;max-width:300px}.clients-columns{gap:20px}.client-logo{padding:15px 18px}.client-review{padding:22px}.clients-column-heading h3{font-size:22px}}
+@media(max-width:760px){
+ .clients-scroll{inset:126px 0 16px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#f5f2e980 transparent}
+ .clients-content{height:auto;width:calc(100% - 32px);gap:27px;padding:4px 0 12px}
+ .clients-heading{display:block;padding:0 10px}.clients-heading h2{font-size:42px;margin-top:8px}.clients-heading p{font-size:13px;max-width:32ch;margin-top:14px}
+ .clients-columns{display:flex;flex-direction:column;gap:28px;flex:none}
+ .clients-column{overflow:visible}.clients-column-heading{padding:0 10px 10px}.clients-column-heading h3{font-size:23px}
+ .clients-pane{flex:none;overflow:visible;scrollbar-gutter:auto;padding:5px 8px 0;perspective:none}
+ .client-logos{gap:13px}.client-logo{height:93px;padding:15px}.client-logo img{max-height:58px}
+ .client-reviews{gap:16px}.client-review{padding:21px}.client-review blockquote{font-size:15px;line-height:1.65}
+ .clients-end{padding:0 10px;align-items:start;flex-direction:column;gap:5px}
+ .client-float-card{border-radius:12px}
+}
+@media(max-height:700px) and (min-width:761px){.clients-content{gap:14px}.clients-heading h2{font-size:38px}.clients-heading p{font-size:12px}.clients-heading .eyebrow{font-size:9px}.clients-scroll{bottom:12px}.clients-column-heading{padding-bottom:7px}.client-logo{height:90px}.clients-end{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.client-float-card,.client-float-card::after{transition:none!important;transform:none!important}.client-float-card::after{display:none}}

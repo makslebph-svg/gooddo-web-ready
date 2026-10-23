@@ -8,7 +8,7 @@ window.GOODDO_TEAM = {
   entry: {kind: 'placeholder', src: null, poster: 'assets/hero-static.webp'},
   exit: {kind: 'placeholder', src: null, poster: 'assets/hero-static.webp'},
   people: [
-    {id: 'ramil', name: 'Рамиль Арифуллов', shortName: 'Рамиль', role: 'CEO, генеральный продюсер', time: 0, poster: 'assets/team/stills/01-ramil.jpg', crop: 45, side: 'left'},
+    {id: 'ramil', name: 'Рамиль Арифуллов', shortName: 'Рамиль', role: 'CEO, генеральный продюсер', time: 0, poster: 'assets/team/stills/01-ramil-leonardo.webp', crop: 44, side: 'left'},
     {id: 'maksim', name: 'Максим Лебедев', shortName: 'Максим', role: 'ИИ-специалист, продюсер по графике и анимации', time: 6, poster: 'assets/team/stills/02-maksim.jpg', crop: 62, side: 'left'},
     {id: 'sergey', name: 'Сергей Гарник', shortName: 'Сергей', role: 'Главный по съёмкам', time: 12.0416666667, poster: 'assets/team/stills/03-sergey.jpg', crop: 20, side: 'right'},
     {id: 'valeria', name: 'Валерия Свиридова', shortName: 'Валерия', role: 'Менеджер проектов', time: 18.0833333333, poster: 'assets/team/stills/04-valeria.jpg', crop: 60, side: 'left'}

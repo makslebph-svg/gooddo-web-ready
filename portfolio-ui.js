@@ -73,7 +73,7 @@
     video.pause();
     document.getElementById('project-title').textContent = work.name;
     document.getElementById('project-desc').textContent = work.task || work.format;
-    document.getElementById('project-approach').textContent = work.solution || 'Подробности проекта — на основном сайте GoodDo';
+    document.getElementById('project-approach').textContent = work.solution || work.format;
     document.getElementById('project-index').textContent = `${String(selected+1).padStart(2,'0')} / ${activeHall.title}`;
     document.getElementById('project-count').textContent = `${String(selected+1).padStart(2,'0')} / ${String(works.length).padStart(2,'0')}`;
     document.getElementById('project-task-label').textContent = work.task ? 'ЗАДАЧА' : 'ФОРМАТ';
@@ -82,7 +82,7 @@
     result.hidden = !work.result;
     document.getElementById('project-result-label').hidden = !work.result;
     result.textContent = work.result || '';
-    document.getElementById('project-source').href = work.source;
+    document.getElementById('project-source').dataset.project = work.name;
     [...cards.children].forEach((button,i) => button.classList.toggle('selected',i===selected));
     video.poster = 'assets/' + work.image;
     const poster = document.getElementById('project-poster');
@@ -153,11 +153,13 @@
   document.getElementById('carousel-next').onclick = () => rotate(1, true);
   cards.addEventListener('wheel', event => {
     if (!event.target.closest('.art') || deck.inert || dialog.open) return;
+    // Vertical wheel gestures advance the gallery; horizontal input selects a case.
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 3) return;
     event.preventDefault();
     const now = performance.now();
-    if (now - lastWheelAt < 420 || Math.abs(event.deltaY) < 3) return;
+    if (now - lastWheelAt < 420) return;
     lastWheelAt = now;
-    rotate(event.deltaY > 0 ? 1 : -1);
+    rotate(event.deltaX > 0 ? 1 : -1);
   }, {passive:false});
   cards.addEventListener('pointerdown', event => {
     if (!event.target.closest('.art') || deck.inert || dialog.open) return;
