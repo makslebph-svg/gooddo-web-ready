@@ -22,43 +22,43 @@ function add(kind, start, end, weight, hall = -1) {
 }
 const holds=[];
 let titleSegment, approachSegment, reelSegment;
+// All twelve numbered source clips now share one continuous media timeline.
+const frame=1/window.GOODDO_ROUTE_MEDIA.fps;
+const lastFrame=clip=>clip.end-frame;
 const descentEnd=clips[0].start+1.25;
 add('hero',clips[0].start,descentEnd,4);
-clips.forEach((clip,i) => {
-  // The team room now follows the final portfolio hall. Its own exit slot
-  // replaces the old show-room-to-atrium passage in this route.
-  if(i===clips.length-1)return;
-  if(i===1){
-    // Give each studio statement a visible stretch of the straight gallery flight.
-    const reelPoint=clip.start+4.1;
-    approachSegment=add('approach',titleSegment.end,reelPoint,1.2);
-    reelSegment=add('showreel',reelPoint,reelPoint,6);
-    // Play the entire generated turn and entry through the painting after the reel.
-    add('departure',reelPoint,clip.start+5.3,1.6);
-    add('portal',clip.start+5.3,clip.end-1/24,3.2);
-  }else add('travel',i===0?descentEnd:clip.start,clip.end-1/24,clip.end-clip.start,i>=2&&i<=6?i-2:-1);
-  if(i===0)titleSegment=add('titles',clip.end-1/24,clips[i+1].start+3.6,4);
-  if(i>=1&&i<=5) holds.push(add('hall',clip.end-1/24,clip.end-1/24,4,i-1));
-});
-const lastPortfolioFrame=clips.at(-2).end-1/24;
-const atriumFrame=clips.at(-1).end-1/24;
-const clientFrame=holds[0].start;
-add('clients-entry',lastPortfolioFrame,lastPortfolioFrame,1);
+add('travel',descentEnd,lastFrame(clips[0]),clips[0].end-descentEnd);
+titleSegment=add('titles',lastFrame(clips[0]),lastFrame(clips[0]),4);
+const reelPoint=window.GOODDO_ROUTE_MEDIA.showreelTime;
+approachSegment=add('approach',titleSegment.end,reelPoint,3);
+reelSegment=add('showreel',reelPoint,reelPoint,6);
+add('portal',reelPoint,lastFrame(clips[1]),clips[1].end-reelPoint,0);
+holds.push(add('hall',lastFrame(clips[1]),lastFrame(clips[1]),4,0));
+for(let i=2;i<=5;i++){
+  add('travel',clips[i].start,lastFrame(clips[i]),clips[i].end-clips[i].start,i-1);
+  holds.push(add('hall',lastFrame(clips[i]),lastFrame(clips[i]),4,i-1));
+}
+const lastPortfolioFrame=holds.at(-1).start;
+const atriumFrame=lastFrame(clips.at(-1));
+const clientFrame=lastFrame(clips[6]);
+add('clients-entry',clips[6].start,clientFrame,clips[6].end-clips[6].start);
 const clientsHold=add('clients',clientFrame,clientFrame,4);
-const teamEntry=add('team-entry',clientFrame,clientFrame,2.2);
+const teamEntry=add('team-entry',clips[7].start,teamConfig.people[0].time,clips[7].end-clips[7].start);
 const teamHolds=[];
 teamConfig.people.forEach((person,index)=>{
-  const hold=add('team-hold',lastPortfolioFrame,lastPortfolioFrame,3.2);
+  const hold=add('team-hold',person.time,person.time,3.2);
   hold.teamIndex=index;teamHolds.push(hold);
   if(index<teamConfig.people.length-1){
-    const travel=add('team-travel',lastPortfolioFrame,lastPortfolioFrame,teamConfig.clips[index].end-teamConfig.clips[index].start);
+    const clip=clips[8+index];
+    const travel=add('team-travel',person.time,teamConfig.people[index+1].time,clip.end-clip.start);
     travel.teamIndex=index;travel.teamFrom=person.time;travel.teamTo=teamConfig.people[index+1].time;
   }
 });
-const teamExit=add('team-exit',atriumFrame,atriumFrame,2.2);
-const finale=add('final',clips.at(-1).end-1/24,clips.at(-1).end-1/24,6);
+const teamExit=add('team-exit',teamConfig.people.at(-1).time,atriumFrame,clips.at(-1).end-clips.at(-1).start);
+const finale=add('final',atriumFrame,atriumFrame,6);
 const stagePositions=[
   0,
+  titleSegment.offset+titleSegment.weight*.5,
   reelSegment.offset+reelSegment.weight*.5,
   ...holds.map(hold=>hold.offset+hold.weight*.68),
   clientsHold.offset+clientsHold.weight*.5,
@@ -66,11 +66,11 @@ const stagePositions=[
   finale.offset+finale.weight*.42,
   finale.offset+finale.weight*.94
 ];
-const chapterPositions=[0,titleSegment.offset,reelSegment.offset+reelSegment.weight*.5,holds[0].offset+holds[0].weight*.68,teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
+const chapterPositions=[0,titleSegment.offset+titleSegment.weight*.5,reelSegment.offset+reelSegment.weight*.5,holds[0].offset+holds[0].weight*.68,teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
 let lastRoutePosition=0;
-film.poster='assets/hero-static.webp';
-film.src=window.gooddoVideoSource(film,matchMedia('(max-width:760px)').matches?'gooddo-water-gallery-scroll-mobile.mp4':'gooddo-water-gallery-scroll-desktop.mp4')+'?v=flux-route-23';
+film.poster='assets/route-v27/hero.webp';
+film.src=matchMedia('(max-width:760px)').matches?window.GOODDO_ROUTE_MEDIA.mobile:window.GOODDO_ROUTE_MEDIA.desktop;
 const portalWash=document.createElement('div');
 portalWash.className='painting-portal-wash';
 film.after(portalWash);
@@ -91,12 +91,6 @@ function stopFlight(){if(flight)cancelAnimationFrame(flight);flight=0;flightTarg
 function flyTo(position,options={}){
   stopFlight();
   const from=scrollY,to=routeTop(position),distance=Math.abs(to-from);
-  if(!options.skipStudio&&!reducedMotion.matches&&Math.abs(position-chapterPositions[2])<.01&&routePosition()<reelSegment.offset){
-    const current=routePosition();
-    const begin=()=>window.playStudioSequence?.(current<titleSegment.offset?0:current);
-    if(current<titleSegment.offset-.01){flyTo(titleSegment.offset,{skipStudio:true,onComplete:begin});return}
-    begin();return;
-  }
   if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});options.onComplete?.();return;}
   const span=Math.abs(position-routePosition());
   const current=routePosition();
@@ -105,13 +99,13 @@ function flyTo(position,options={}){
   const low=Math.min(current,position),high=Math.max(current,position);
   let pieces=segments.filter(s=>s.offset<high&&s.offset+s.weight>low).map(s=>{
     const a=Math.max(low,s.offset),b=Math.min(high,s.offset+s.weight),fraction=(b-a)/s.weight;
-    const seconds=s.kind==='team-travel'?(s.teamIndex===0?1.15:s.teamTo-s.teamFrom):Math.abs(s.end-s.start);
+    const seconds=s.kind==='approach'?5:Math.abs(s.end-s.start);
     const cost=Math.max(.06,(seconds||.22)*fraction);
     return {a,b,cost};
   });
   if(position<current)pieces=pieces.reverse().map(s=>({...s,a:s.b,b:s.a}));
   const motionCost=pieces.reduce((sum,s)=>sum+s.cost,0);
-  const duration=Math.min(6500,Math.max(850,motionCost*1000));
+  const duration=Math.min(6500,Math.max(850,motionCost*1000))*(low>=titleSegment.offset?.5:1);
   const positionAt=fraction=>{
     let remaining=fraction*motionCost;
     for(const piece of pieces){if(remaining<=piece.cost)return piece.a+(piece.b-piece.a)*remaining/piece.cost;remaining-=piece.cost}
@@ -128,12 +122,7 @@ function flyTo(position,options={}){
   };
   flight=requestAnimationFrame(frame);
 }
-function goTo(position){
-  if(position===chapterPositions[1]&&!reducedMotion.matches){
-    stopFlight();scrollTo({top:routeTop(titleSegment.offset),behavior:'instant'});syncScroll();window.playStudioSequence?.(0);return;
-  }
-  flyTo(position);
-}
+function goTo(position){flyTo(position);}
 function advanceStage(direction){
   if(flight){
     // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
@@ -159,7 +148,7 @@ function innerScrollAvailable(target,direction){
   return !!area&&(direction>0?area.scrollTop+area.clientHeight<area.scrollHeight-2:area.scrollTop>2);
 }
 function clientReadingTarget(target){
-  return journey.dataset.segment==='clients'&&target instanceof Element&&!!target.closest('#clients-scene .clients-column');
+  return journey.dataset.segment==='clients'&&target instanceof Element&&!!target.closest('#clients-scene .clients-reading-zone,.review-dialog');
 }
 let lastWheelEvent=-Infinity;
 addEventListener('wheel',event=>{
@@ -221,7 +210,7 @@ function syncScroll(){
   targetTime=s.start+(s.end-s.start)*p;
   window.updateStudioSequence?.(s,p);
   window.updateTeamRoute?.(s,p);
-  window.GooddoClients?.render(s.kind==='clients'?1:s.kind==='clients-entry'?p:0);
+  window.GooddoClients?.render(s.kind==='clients'?1:0);
   window.updateCasesNavigation?.(s,!!flight);
   const hallVisible=s.kind==='hall';
   portfolio.style.opacity=hallVisible?1:0;
@@ -243,10 +232,13 @@ function syncScroll(){
   const heroOpacity=s.kind==='hero'?1-clamp((p-.1)/.75):0;
   heroCopy.style.opacity=heroOpacity;
   heroCopy.inert=heroOpacity<.1;
-  document.getElementById('story-titles').style.setProperty('--studio-wash',s.kind==='titles'?'1':'0');
+  const factsOpacity=s.kind==='titles'?clamp(p/.18)*clamp((1-p)/.15):s.kind==='approach'?1-clamp(p/.12):0;
+  const facts=document.getElementById('story-titles');
+  facts.style.setProperty('--studio-wash','0');
+  facts.style.setProperty('--facts-opacity',factsOpacity);
+  facts.inert=factsOpacity<.1;facts.setAttribute('aria-hidden',String(factsOpacity<.1));
   titles.forEach((title,i)=>{
-    const local=s.kind==='titles' ? p*titles.length-i : -1;
-    const opacity=s.kind==='titles'?clamp(local*6)*clamp((1-local)*6):0;
+    const opacity=factsOpacity;
     title.style.opacity=opacity;
     title.style.visibility=opacity>0?'visible':'hidden';
     title.style.transform=`translateY(${(1-opacity)*18}px)`;
@@ -291,3 +283,4 @@ function restoreRouteSection(){
 }
 film.addEventListener('loadeddata',restoreRouteSection);
 addEventListener('hashchange',restoreRouteSection);
+

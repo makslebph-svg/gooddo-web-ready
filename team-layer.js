@@ -1,69 +1,52 @@
 (() => {
   const config=window.GOODDO_TEAM;
   const room=document.getElementById('team-room');
-  const film=document.getElementById('team-film');
-  const fallback=document.getElementById('team-fallback');
-  const ramilStill=document.createElement('img');
-  ramilStill.className='team-media team-ramil-still';
-  ramilStill.src=config.people[0].poster;
-  ramilStill.alt='Рамиль с улыбкой толкает тяжёлую раму с инженерным рисунком';
-  ramilStill.style.zIndex='1';ramilStill.style.opacity='0';
-  film.after(ramilStill);
-  const captions=[...room.querySelectorAll('[data-person]')];
+  const media=document.getElementById('scroll-film');
   const clamp=p=>Math.max(0,Math.min(1,p));
-  const ease=p=>p*p*(3-2*p);
-  const mp4=matchMedia('(max-width:760px)').matches?config.mobileVideo:config.video;
-  let started=false,ready=false,desired=0,request=0,failed=false,triedMp4=false;
-  function queue(){
-    if(request)return;
-    request=requestAnimationFrame(()=>{
-      request=0;if(!ready||film.seeking||document.hidden)return;
-      const time=Math.max(0,Math.min(desired,film.duration-1/config.fps));
-      if(Math.abs(film.currentTime-time)>1/(config.fps*2))film.currentTime=time;
+  const captions=config.people.map(person=>{
+    const article=document.createElement('article');
+    article.className='team-caption';article.dataset.person=person.id;
+    const name=document.createElement('h2');name.textContent=person.name;
+    const role=document.createElement('p');role.textContent=person.role;
+    article.append(name,role);room.append(article);return article;
+  });
+  function placeCaption(caption,person){
+    const w=innerWidth,h=innerHeight;
+    if(w<=760){
+      Object.assign(caption.style,{left:'18px',right:'18px',top:'auto',bottom:'24px',width:'auto'});
+      return;
+    }
+    const scale=Math.max(w/1920,h/1080),vw=1920*scale,vh=1080*scale;
+    const width=Math.min(430,person.plate.w*vw,w-40);
+    caption.style.width=width+'px';
+    const menuBottom=document.querySelector('.route-hud').getBoundingClientRect().bottom;
+    const x=person.plate.x*vw-(vw-w)*.5;
+    const y=person.plate.y*vh-(vh-h)*.5;
+    Object.assign(caption.style,{
+      left:Math.max(20,Math.min(w-width-20,x))+'px',right:'auto',bottom:'auto',
+      top:Math.max(menuBottom+12,Math.min(h-caption.offsetHeight-20,y))+'px'
     });
-  }
-  function load(){
-    if(started)return;started=true;
-    film.src=window.gooddoVideoSource(film,mp4);film.preload='auto';film.load();
   }
   window.updateTeamRoute=(segment,p)=>{
     const active=segment.kind.startsWith('team-');
-    if(active||(segment.kind==='hall'&&segment.hall===4))load();
-    let opacity=0,index=segment.teamIndex||0,crop=config.people[index].crop;
-    let stillOpacity=0;
-    if(segment.kind==='team-entry'){opacity=ease(p);desired=config.people[1].time;index=0;stillOpacity=1}
-    else if(segment.kind==='team-hold'){opacity=1;desired=config.people[index].time;if(index===0){stillOpacity=1;desired=config.people[1].time}}
-    else if(segment.kind==='team-travel'){
-      opacity=1;desired=segment.teamFrom+(segment.teamTo-segment.teamFrom)*p;
-      crop=config.people[index].crop+(config.people[index+1].crop-config.people[index].crop)*p;
-      // New still replaces the old pose; use a finite dissolve until a matching clip exists.
-      if(segment.teamIndex===0){desired=config.people[1].time;stillOpacity=1-ease(p)}
-      if(p>.5)index++;
-    }else if(segment.kind==='team-exit'){
-      opacity=1-ease(p);index=config.people.length-1;desired=config.people[index].time;crop=config.people[index].crop;
-    }
-    room.style.opacity=opacity;room.style.visibility=opacity>0?'visible':'hidden';
-    ramilStill.style.opacity=stillOpacity;
-    room.setAttribute('aria-hidden',String(!active));room.inert=!active;
-    room.style.setProperty('--team-frame-x',crop+'%');
-    const poster=config.people[index].poster;
-    if((!ready||failed)&&fallback.getAttribute('src')!==poster)fallback.src=poster;
+    const index=segment.teamIndex||0;
+    let crop=50;
+    if(segment.kind==='team-entry')crop=50+(config.people[0].crop-50)*p;
+    else if(segment.kind==='team-travel')crop=config.people[index].crop+(config.people[index+1].crop-config.people[index].crop)*p;
+    else if(segment.kind==='team-hold')crop=config.people[index].crop;
+    else if(segment.kind==='team-exit')crop=config.people.at(-1).crop+(50-config.people.at(-1).crop)*p;
+    media.style.objectPosition=innerWidth<=760?crop+'% 50%':'50% 50%';
+    room.style.opacity=active?'1':'0';room.style.visibility=active?'visible':'hidden';
+    room.inert=!active;room.setAttribute('aria-hidden',String(!active));
     captions.forEach((caption,i)=>{
-      const visible=segment.kind==='team-hold'&&i===segment.teamIndex;
-      const a=visible?clamp(p/.16)*clamp((1-p)/.12):0;
-      caption.style.opacity=a;caption.style.visibility=a>0?'visible':'hidden';
-      caption.style.transform=`translateY(${(1-a)*12}px)`;
-      caption.setAttribute('aria-hidden',String(a<.5));
+      const visible=segment.kind==='team-hold'&&i===index;
+      const opacity=visible?clamp(p/.16)*clamp((1-p)/.12):0;
+      caption.style.opacity=String(opacity);caption.style.visibility=opacity>0?'visible':'hidden';
+      caption.setAttribute('aria-hidden',String(opacity<.5));
+      if(visible)placeCaption(caption,config.people[i]);
     });
-    room.dataset.person=segment.kind==='team-hold'?config.people[segment.teamIndex].id:'';
-    room.dataset.targetTime=desired.toFixed(3);room.dataset.transition=segment.kind;
-    if(active)queue();
+    room.dataset.person=segment.kind==='team-hold'?config.people[index].id:'';
+    room.dataset.transition=segment.kind;
+    room.dataset.targetTime=(segment.start+(segment.end-segment.start)*p).toFixed(3);
   };
-  film.addEventListener('loadeddata',()=>{ready=true;failed=false;film.pause();film.classList.add('ready');queue()});
-  film.addEventListener('seeked',queue);
-  film.addEventListener('play',()=>film.pause());
-  film.addEventListener('error',()=>{
-    if(!triedMp4&&film.getAttribute('src')!==mp4){triedMp4=true;film.src=mp4;film.load();return}
-    failed=true;ready=false;film.classList.remove('ready');
-  });
 })();

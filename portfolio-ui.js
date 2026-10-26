@@ -53,7 +53,8 @@
     const arrow = document.createElement('span');
     arrow.className = 'card-arrow';
     arrow.setAttribute('aria-hidden', 'true');
-    arrow.textContent = '↗';
+    arrow.innerHTML = work.video ? '<svg viewBox="0 0 20 20" focusable="false"><path d="M6 3.5 16 10 6 16.5Z"/></svg>' : '<svg viewBox="0 0 20 20" focusable="false"><path d="M3 3h14v14H3Zm2 2v10h10V5Zm2 3h6v1H7Zm0 3h6v1H7Z" fill-rule="evenodd"/></svg>';
+    button.title = (work.video ? 'Смотреть кейс ' : 'Открыть кейс ') + work.name;
     caption.append(index, document.createTextNode(work.name), arrow);
     button.append(image, caption);
     button.onclick = () => {
@@ -195,3 +196,4 @@
   };
   window.leavePortfolio = () => { dragStart = null; };
 })();
+
