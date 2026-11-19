@@ -38,9 +38,11 @@
     media.style.objectPosition=innerWidth<=760?crop+'% 50%':'50% 50%';
     room.style.opacity=active?'1':'0';room.style.visibility=active?'visible':'hidden';
     room.inert=!active;room.setAttribute('aria-hidden',String(!active));
+    const hold=segment.kind==='team-hold';
+    const holdOpacity=hold?clamp(p/.16)*clamp((1-p)/.12):0;
     captions.forEach((caption,i)=>{
-      const visible=segment.kind==='team-hold'&&i===index;
-      const opacity=visible?clamp(p/.16)*clamp((1-p)/.12):0;
+      const visible=hold&&i===index;
+      const opacity=visible?holdOpacity:0;
       caption.style.opacity=String(opacity);caption.style.visibility=opacity>0?'visible':'hidden';
       caption.setAttribute('aria-hidden',String(opacity<.5));
       if(visible)placeCaption(caption,config.people[i]);

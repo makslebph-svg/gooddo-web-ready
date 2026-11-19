@@ -1,9 +1,11 @@
 (() => {
-  let works = window.GOODDO_CASES.ai, activeHall = window.GOODDO_HALLS[0];
+  let activeHall = window.GOODDO_HALLS[0];
+  let works = window.GOODDO_CASES[activeHall.collection];
   const demo = document.getElementById('demo');
   const deck = document.getElementById('deck');
   const cards = document.getElementById('project-cards');
   const count = document.getElementById('carousel-count');
+  const progress = document.getElementById('carousel-progress');
   const dialog = document.getElementById('project');
   const media = document.getElementById('project-media');
   const video = document.getElementById('project-video');
@@ -25,6 +27,7 @@
       button.setAttribute('aria-current', offset === 0 ? 'true' : 'false');
     });
     count.textContent = `${String(centered + 1).padStart(2,'0')} / ${String(works.length).padStart(2,'0')}`;
+    progress.style.transform = `scaleX(${(centered + 1) / works.length})`;
   }
 
   function rotate(direction, focus = false) {
@@ -42,20 +45,30 @@
     button.type = 'button';
     button.className = 'art';
     button.tabIndex = 0;
-    const image = document.createElement('img');
-    image.src = 'assets/' + work.image;
-    image.alt = '';
+    const artwork = artworkFor(work);
+    const image = artwork.poster ? document.createElement('img') : document.createElement('span');
+    if (artwork.poster) {
+      image.src = artwork.poster;
+      image.alt = '';
+      image.decoding = 'async';
+    } else {
+      image.className = 'case-card-cover';
+      image.setAttribute('aria-hidden', 'true');
+    }
     const caption = document.createElement('span');
     caption.className = 'card-caption';
     const index = document.createElement('small');
     index.className = 'card-index';
-    index.textContent = `${String(i+1).padStart(2,'0')} / ${activeHall.short.toUpperCase()}`;
+    index.textContent = work.format;
+    const title = document.createElement('span');
+    title.className = 'card-title';
+    title.textContent = work.name;
     const arrow = document.createElement('span');
     arrow.className = 'card-arrow';
     arrow.setAttribute('aria-hidden', 'true');
-    arrow.innerHTML = work.video ? '<svg viewBox="0 0 20 20" focusable="false"><path d="M6 3.5 16 10 6 16.5Z"/></svg>' : '<svg viewBox="0 0 20 20" focusable="false"><path d="M3 3h14v14H3Zm2 2v10h10V5Zm2 3h6v1H7Zm0 3h6v1H7Z" fill-rule="evenodd"/></svg>';
-    button.title = (work.video ? 'Смотреть кейс ' : 'Открыть кейс ') + work.name;
-    caption.append(index, document.createTextNode(work.name), arrow);
+    arrow.innerHTML = '<svg viewBox="0 0 20 20" focusable="false"><path d="M6 3.5 16 10 6 16.5Z"/></svg>';
+    button.title = 'Открыть кейс ' + work.name;
+    caption.append(index, title, arrow);
     button.append(image, caption);
     button.onclick = () => {
       if (dragged) { dragged = false; return; }
@@ -68,38 +81,63 @@
   }
   renderCards();
 
+  function artworkFor(work) {
+    return window.GOODDO_CASE_MEDIA[work.id] || {};
+  }
+
+  function showVideoLink() {
+    video.hidden = true;
+    const artwork = artworkFor(works[selected]);
+    document.getElementById('project-poster').hidden = !artwork.poster;
+    document.getElementById('project-watch').hidden = false;
+    media.classList.add('project-media-external');
+  }
+
+  video.addEventListener('error', () => {
+    if (dialog.open && video.getAttribute('src')) showVideoLink();
+  });
+
   function setProject(index) {
     selected = (index + works.length) % works.length;
     const work = works[selected];
     video.pause();
     document.getElementById('project-title').textContent = work.name;
-    document.getElementById('project-desc').textContent = work.task || work.format;
-    document.getElementById('project-approach').textContent = work.solution || work.format;
-    document.getElementById('project-index').textContent = `${String(selected+1).padStart(2,'0')} / ${activeHall.title}`;
+    document.getElementById('project-desc').textContent = work.paragraphs[0];
+    const story = document.getElementById('project-story');
+    story.replaceChildren(...work.paragraphs.slice(1).map(text => {
+      const paragraph = document.createElement('p');
+      paragraph.textContent = text;
+      return paragraph;
+    }));
+    document.getElementById('project-index').textContent = activeHall.title;
     document.getElementById('project-count').textContent = `${String(selected+1).padStart(2,'0')} / ${String(works.length).padStart(2,'0')}`;
-    document.getElementById('project-task-label').textContent = work.task ? 'ЗАДАЧА' : 'ФОРМАТ';
-    document.getElementById('project-solution-label').textContent = work.solution ? 'РЕШЕНИЕ' : 'О ПРОЕКТЕ';
-    const result = document.getElementById('project-result');
-    result.hidden = !work.result;
-    document.getElementById('project-result-label').hidden = !work.result;
-    result.textContent = work.result || '';
     document.getElementById('project-source').dataset.project = work.name;
     [...cards.children].forEach((button,i) => button.classList.toggle('selected',i===selected));
-    video.poster = 'assets/' + work.image;
+    const artwork = artworkFor(work);
     const poster = document.getElementById('project-poster');
-    video.hidden = !work.video;
-    poster.hidden = Boolean(work.video);
-    document.querySelector('.project-tag').textContent = work.format;
-    document.getElementById('project-media-label').textContent = work.brand || activeHall.short.toUpperCase();
-    if (work.video) {video.src = window.gooddoVideoSource(video, 'assets/' + work.video);video.load();}
-    else {video.removeAttribute('src');video.load();poster.src = 'assets/' + work.image;poster.alt = work.name;}
-    const services = document.querySelector('.project-services');
-    services.replaceChildren();
-    for (const detail of [work.client, work.brand].filter(Boolean)) {
-      const line = document.createElement('span');
-      line.textContent = detail;
-      services.append(line);
+    const watch = document.getElementById('project-watch');
+    watch.href = work.source;
+    watch.hidden = true;
+    media.classList.remove('project-media-external');
+    video.hidden = !artwork.video;
+    poster.hidden = true;
+    if (artwork.poster) {
+      video.poster = artwork.poster;
+      poster.src = artwork.poster;
+      poster.alt = work.name;
+    } else {
+      video.removeAttribute('poster');
+      poster.removeAttribute('src');
     }
+    document.querySelector('.project-tag').textContent = work.format;
+    document.getElementById('project-media-label').textContent = activeHall.short.toUpperCase();
+    if (artwork.video) {
+      video.src = artwork.video;
+    } else {
+      video.removeAttribute('src');
+      showVideoLink();
+    }
+    video.load();
     status.textContent = 'Открыт проект ' + work.name;
   }
 
@@ -123,7 +161,7 @@
       flight = media.animate([{transform:flightTransform(from),opacity:.45},{transform:'none',opacity:1}],{duration:650,easing:'cubic-bezier(.2,.8,.2,1)'});
     }
     close.focus({preventScroll:true});
-    if (works[selected].video) video.play().catch(() => { status.textContent = 'Нажмите воспроизведение в плеере'; });
+    if (artworkFor(works[selected]).video) video.play().catch(() => { status.textContent = 'Нажмите воспроизведение в плеере'; });
   }
 
   async function closeProject() {
@@ -145,13 +183,15 @@
     closing = false;
     dialog.classList.remove('closing');
     document.body.style.overflow = '';
+    centered = selected;
+    showCarousel();
     cards.children[selected].focus({preventScroll:true});
     status.textContent = 'Вы вернулись к работам';
   });
   dialog.addEventListener('cancel', event => {event.preventDefault();closeProject();});
   close.onclick = closeProject;
-  document.getElementById('carousel-prev').onclick = () => rotate(-1, true);
-  document.getElementById('carousel-next').onclick = () => rotate(1, true);
+  document.getElementById('carousel-prev').onclick = () => rotate(-1);
+  document.getElementById('carousel-next').onclick = () => rotate(1);
   cards.addEventListener('wheel', event => {
     if (!event.target.closest('.art') || deck.inert || dialog.open) return;
     // Vertical wheel gestures advance the gallery; horizontal input selects a case.
@@ -184,12 +224,18 @@
     event.preventDefault();
     rotate(event.key === 'ArrowRight' ? 1 : -1, true);
   });
-  document.getElementById('prev').onclick = () => {if (!closing) {setProject(selected-1);if(works[selected].video) video.play().catch(()=>{});}};
-  document.getElementById('next').onclick = () => {if (!closing) {setProject(selected+1);if(works[selected].video) video.play().catch(()=>{});}};
+  function switchProject(direction) {
+    if (closing) return;
+    setProject(selected + direction);
+    dialog.scrollTop = 0;
+    if (artworkFor(works[selected]).video) video.play().catch(() => {});
+  }
+  document.getElementById('prev').onclick = () => switchProject(-1);
+  document.getElementById('next').onclick = () => switchProject(1);
   document.addEventListener('visibilitychange', () => {if(document.hidden) video.pause();});
   window.setPortfolioHall = index => {
     activeHall = window.GOODDO_HALLS[index];
-    works = window.GOODDO_CASES[activeHall.id];
+    works = window.GOODDO_CASES[activeHall.collection];
     centered = 0;
     cards.setAttribute('aria-label', 'Карусель проектов — '+activeHall.title);
     renderCards();

@@ -10,7 +10,7 @@
   ];
   const portraits=['03_Iya_Kononovich','02_Petr_Ivanov','05_Ekaterina','04_Tigran_Oganyan','06_Yulia_Pletina','01_Igor_Demidov'];
   const scene=document.createElement('section');scene.id='clients-scene';scene.className='clients-scene';scene.setAttribute('aria-label','Клиенты и отзывы');scene.setAttribute('aria-hidden','true');scene.inert=true;
-  scene.innerHTML=`<div class="clients-content">
+  scene.innerHTML=`<div class="clients-content" data-route-scroll>
     <header class="clients-heading"><span class="eyebrow">GOODDO / КЛИЕНТЫ</span><h2>Нам доверяют</h2></header>
     <div class="reviews-carousel clients-reading-zone" tabindex="0" role="region" aria-roledescription="карусель" aria-label="Отзывы клиентов — перетаскивайте карточки или используйте стрелки">
     ${reviews.map((r,i)=>`<article class="client-review" data-review="${i}" aria-label="Отзыв ${i+1} из ${reviews.length}" tabindex="-1"><span class="review-quote" aria-hidden="true">“</span><div class="review-copy" data-route-scroll tabindex="-1"><blockquote>${r.text}</blockquote>${r.more?`<p>${r.more}</p>`:''}</div><div class="review-author"><img src="assets/review-portraits/${portraits[i]}.webp" alt="${r.name}" decoding="async"><div><strong>${r.name}</strong><span>${r.role}</span></div></div>${r.more?`<button class="review-more" data-review-open="${i}">Читать полностью ↗</button>`:''}</article>`).join('')}
@@ -20,6 +20,16 @@
     <div class="clients-end">Прокрутите вне карточек, чтобы продолжить</div>
   </div><dialog class="review-dialog" aria-label="Полный отзыв"><button class="review-dialog-close" aria-label="Закрыть отзыв">×</button><div class="review-dialog-content"></div></dialog>`;
   document.querySelector('#journey .stage').appendChild(scene);
+  const content = scene.querySelector('.clients-content');
+  const smallScreen = matchMedia('(max-width:760px)');
+  // On short phone screens let the section scroll to its last row of logos.
+  content.addEventListener('wheel', event => {
+    if (!smallScreen.matches) return;
+    const canScroll = event.deltaY > 0
+      ? content.scrollTop + content.clientHeight < content.scrollHeight - 1
+      : content.scrollTop > 0;
+    if (canScroll) event.stopPropagation();
+  });
   const carousel=scene.querySelector('.reviews-carousel'),cards=[...scene.querySelectorAll('.client-review')],reduced=matchMedia('(prefers-reduced-motion:reduce)');
   let index=1,lastActive=false,wheelAt=0,drag=null,suppressClickUntil=0;
   function select(next){index=(next+reviews.length)%reviews.length;cards.forEach((card,i)=>{let delta=(i-index+reviews.length)%reviews.length;if(delta>reviews.length/2)delta-=reviews.length;const visible=Math.abs(delta)<=1;card.dataset.position=delta===0?'current':delta===-1?'previous':delta===1?'next':'hidden';card.setAttribute('aria-hidden',String(!visible));card.inert=!visible;card.tabIndex=visible&&delta!==0?0:-1;card.querySelector('.review-copy').tabIndex=delta===0?0:-1;const more=card.querySelector('.review-more');if(more)more.tabIndex=delta===0?0:-1;});scene.querySelector('.review-counter').textContent=String(index+1).padStart(2,'0')+' / 06';scene.querySelector('.review-progress span').style.width=((index+1)/reviews.length*100)+'%';}
@@ -27,6 +37,7 @@
   scene.querySelector('.review-prev').addEventListener('click',()=>select(index-1));scene.querySelector('.review-next').addEventListener('click',()=>select(index+1));
   cards.forEach((card,i)=>{card.addEventListener('click',event=>{if(performance.now()<suppressClickUntil){event.preventDefault();return;}if(card.dataset.position!=='current'&&!event.target.closest('button'))select(i)});card.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&card.dataset.position!=='current'){event.preventDefault();select(i)}})});
   scene.querySelectorAll('.clients-reading-zone').forEach(zone=>zone.addEventListener('wheel',event=>{
+    if(smallScreen.matches&&zone.classList.contains('client-logo-strip'))return;
     event.stopPropagation();const scrolling=event.target.closest('.review-copy');if(scrolling&&scrolling.scrollHeight>scrolling.clientHeight+2){const towardBottom=event.deltaY>0&&scrolling.scrollTop+scrolling.clientHeight<scrolling.scrollHeight-2;const towardTop=event.deltaY<0&&scrolling.scrollTop>1;if(towardBottom||towardTop)return;event.preventDefault();return;}
     if(zone.classList.contains('client-logo-strip')){event.preventDefault();zone.scrollLeft+=Math.abs(event.deltaX)>Math.abs(event.deltaY)?event.deltaX:event.deltaY;return;}event.preventDefault();const now=performance.now();if(Math.abs(event.deltaY)<8||now-wheelAt<650)return;wheelAt=now;select(index+(event.deltaY>0?1:-1));
   },{passive:false}));

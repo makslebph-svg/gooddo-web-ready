@@ -22,7 +22,7 @@ function add(kind, start, end, weight, hall = -1) {
 }
 const holds=[];
 let titleSegment, approachSegment, reelSegment;
-// All twelve numbered source clips now share one continuous media timeline.
+// The stops and transitions share one seekable media timeline.
 const frame=1/window.GOODDO_ROUTE_MEDIA.fps;
 const lastFrame=clip=>clip.end-frame;
 const descentEnd=clips[0].start+1.25;
@@ -34,22 +34,25 @@ approachSegment=add('approach',titleSegment.end,reelPoint,3);
 reelSegment=add('showreel',reelPoint,reelPoint,6);
 add('portal',reelPoint,lastFrame(clips[1]),clips[1].end-reelPoint,0);
 holds.push(add('hall',lastFrame(clips[1]),lastFrame(clips[1]),4,0));
-for(let i=2;i<=5;i++){
-  add('travel',clips[i].start,lastFrame(clips[i]),clips[i].end-clips[i].start,i-1);
-  holds.push(add('hall',lastFrame(clips[i]),lastFrame(clips[i]),4,i-1));
+for(let i=2;i<=4;i++){
+  // The staged hall holds on the new first frame, with the correct view inside its painting.
+  const arrival=i===3?clips[4].start:lastFrame(clips[i]);
+  add('travel',clips[i].start,arrival,clips[i].end-clips[i].start,i-1);
+  holds.push(add('hall',arrival,arrival,4,i-1));
 }
-const lastPortfolioFrame=holds.at(-1).start;
 const atriumFrame=lastFrame(clips.at(-1));
-const clientFrame=lastFrame(clips[6]);
-add('clients-entry',clips[6].start,clientFrame,clips[6].end-clips[6].start);
+const clientsEntry=clips[5];
+const clientFrame=lastFrame(clientsEntry);
+add('clients-entry',clientsEntry.start,clientFrame,clientsEntry.end-clientsEntry.start);
 const clientsHold=add('clients',clientFrame,clientFrame,4);
-const teamEntry=add('team-entry',clips[7].start,teamConfig.people[0].time,clips[7].end-clips[7].start);
+const teamArrival=clips[6];
+add('team-entry',teamArrival.start,teamConfig.people[0].time,teamArrival.end-teamArrival.start);
 const teamHolds=[];
 teamConfig.people.forEach((person,index)=>{
   const hold=add('team-hold',person.time,person.time,3.2);
   hold.teamIndex=index;teamHolds.push(hold);
   if(index<teamConfig.people.length-1){
-    const clip=clips[8+index];
+    const clip=clips[7+index];
     const travel=add('team-travel',person.time,teamConfig.people[index+1].time,clip.end-clip.start);
     travel.teamIndex=index;travel.teamFrom=person.time;travel.teamTo=teamConfig.people[index+1].time;
   }
@@ -71,9 +74,6 @@ let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
 let lastRoutePosition=0;
 film.poster='assets/route-v27/hero.webp';
 film.src=matchMedia('(max-width:760px)').matches?window.GOODDO_ROUTE_MEDIA.mobile:window.GOODDO_ROUTE_MEDIA.desktop;
-const portalWash=document.createElement('div');
-portalWash.className='painting-portal-wash';
-film.after(portalWash);
 film.muted=true;
 film.load();
 function schedule(){if(!request)request=requestAnimationFrame(render);}
@@ -123,6 +123,8 @@ function flyTo(position,options={}){
   flight=requestAnimationFrame(frame);
 }
 function goTo(position){flyTo(position);}
+document.querySelector('#hero-showreel').addEventListener('click',()=>goTo(chapterPositions[2]));
+document.querySelector('#hero-scroll').addEventListener('click',()=>advanceStage(1));
 function advanceStage(direction){
   if(flight){
     // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
@@ -144,8 +146,12 @@ function routeInputAllowed(target){
     && !(target instanceof Element&&target.closest('input,textarea,select,[contenteditable],.route-nav,#cases-subnav'));
 }
 function innerScrollAvailable(target,direction){
-  const area=target instanceof Element?target.closest('[data-route-scroll]'):null;
-  return !!area&&(direction>0?area.scrollTop+area.clientHeight<area.scrollHeight-2:area.scrollTop>2);
+  let area=target instanceof Element?target.closest('[data-route-scroll]'):null;
+  while(area){
+    if(direction>0?area.scrollTop+area.clientHeight<area.scrollHeight-2:area.scrollTop>2)return true;
+    area=area.parentElement?.closest('[data-route-scroll]');
+  }
+  return false;
 }
 function clientReadingTarget(target){
   return journey.dataset.segment==='clients'&&target instanceof Element&&!!target.closest('#clients-scene .clients-reading-zone,.review-dialog');
@@ -229,6 +235,8 @@ function syncScroll(){
   loopHero.style.visibility=reveal>0?'visible':'hidden';
   loopHero.setAttribute('aria-hidden',String(reveal===0));
   film.style.opacity=1;
+  const reelBlur=s.kind==='approach'?5*clamp((p-.12)/.88):s.kind==='showreel'?5:s.kind==='portal'?5*(1-clamp(p/.28)):0;
+  journey.style.setProperty('--route-reel-blur',`${reelBlur.toFixed(2)}px`);
   const heroOpacity=s.kind==='hero'?1-clamp((p-.1)/.75):0;
   heroCopy.style.opacity=heroOpacity;
   heroCopy.inert=heroOpacity<.1;
@@ -247,7 +255,6 @@ function syncScroll(){
   services.style.opacity=0;services.inert=true;
   document.getElementById('level-transition').style.visibility='hidden';
   window.updateGlassScene?.(s.kind==='showreel'?p:-1);
-  portalWash.style.opacity=0;
   document.getElementById('journey-progress').style.transform=`scaleX(${progress})`;
   journey.dataset.progress=progress.toFixed(4);
   journey.dataset.targetTime=targetTime.toFixed(3);
@@ -269,7 +276,10 @@ addEventListener('resize',()=>{
   syncScroll();
 });
 chapters.forEach((button,i)=>{if(button.id!=='cases-nav-trigger')button.addEventListener('click',()=>goTo(chapterPositions[i]))});
-document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(button.dataset.hall)].offset+1)));
+document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>{
+  const hold = holds[Number(button.dataset.hall)];
+  goTo(hold.offset + hold.weight * .68);
+}));
 document.querySelectorAll('[data-walk]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(portfolio.dataset.hallIndex||0)].offset+holds[0].weight*.68)));
 syncScroll();
 function restoreRouteSection(){
