@@ -1,7 +1,7 @@
 (() => {
   const privacyUrl='privacy.html';
   const service='77509557f418129d7ea93f406f9432b1';
-  const field=(name,type,label,required=false)=>`<div class="t-input-group" data-input-lid="${name}" data-field-type="${type==='email'?'em':type==='tel'?'ph':'nm'}" data-field-name="${name}"><div class="t-input-block"><label><span class="form-field-label">${label}</span><input class="t-input js-tilda-rule" name="${name}" type="${type}" placeholder="${label}" autocomplete="${type==='tel'?'tel':type==='email'?'email':'name'}" ${required?'required data-tilda-req="1"':''} ${type==='email'?'data-tilda-rule="email"':''} ${type==='tel'?'inputmode="tel" minlength="7" maxlength="25"':''}></label><div class="t-input-error"></div></div></div>`;
+  const field=(name,type,label,required=false)=>`<div class="t-input-group" data-input-lid="${name}" data-field-type="${type==='email'?'em':type==='tel'?'ph':'nm'}" data-field-name="${name}"><div class="t-input-block"><label><span class="form-field-label">${label}</span><input class="t-input js-tilda-rule" name="${name}" type="${type}" placeholder="${label}" autocomplete="${type==='tel'?'tel':type==='email'?'email':'name'}" ${required?'required data-tilda-req="1"':''} ${type==='email'?'data-tilda-rule="email" maxlength="254" autocapitalize="none" spellcheck="false"':''} ${type==='tel'?'inputmode="tel" value="+7" pattern="[+]7[0-9]{10}"':''}></label><div class="t-input-error"></div></div></div>`;
   function form(id,hasEmail){return `<div class="r t-rec t396 gooddo-form-record" id="rec${id}" data-record-type="396"><form id="form${id}" name="form${id}" class="gooddo-project-form t-form js-form-proccess" method="POST" action="https://forms.tildaapi.com/procces/" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="gooddoProjectFormSuccess"><input type="hidden" name="formservices[]" class="js-formaction-services" value="${service}"><input type="hidden" name="tildaspec-elemid" value="1755788534053"><input type="hidden" name="Project" value=""><div class="js-successbox t-form__successbox" role="status" style="display:none">Спасибо за обращение — наш менеджер свяжется с вами в ближайшее время</div><div class="t-form__inputsbox"><div class="gooddo-form-fields">${field('name','text','Имя',true)}${hasEmail?field('email','email','Почта'):''}${field('Phone','tel','Телефон',true)}<div class="t-form__submit"><button type="submit" class="t-submit">${hasEmail?'Оставить заявку ↗':'Перезвоните мне ↗'}</button></div></div><div class="t-input-group consent-group" data-input-lid="consent" data-field-type="cb"><div class="t-input-block"><label class="form-consent"><input type="checkbox" name="consent" value="yes" class="t-checkbox js-tilda-rule" required data-tilda-req="1"><span>Согласен на обработку персональных данных и ознакомился с <a href="${privacyUrl}" target="_blank" rel="noopener">политикой конфиденциальности</a></span></label><div class="t-input-error"></div></div></div><div class="t-form__errorbox-middle"><div class="js-errorbox-all t-form__errorbox-wrapper" style="display:none" role="alert"><ul class="t-form__errorbox-text"><li class="t-form__errorbox-item js-rule-error js-rule-error-all"></li><li class="t-form__errorbox-item js-rule-error js-rule-error-req">Заполните обязательные поля и подтвердите согласие</li><li class="t-form__errorbox-item js-rule-error js-rule-error-email">Проверьте адрес почты</li><li class="t-form__errorbox-item js-rule-error js-rule-error-phone">Проверьте номер телефона</li></ul></div></div><p class="form-local-status" role="status" aria-live="polite"></p></div></form></div>`}
   const meta=document.createElement('div');meta.id='allrecords';meta.hidden=true;Object.entries({'data-tilda-project-id':'9187793','data-tilda-page-id':'74129459','data-tilda-formskey':'16b9d846f5ecf7f5ce102ea559187793','data-tilda-project-lang':'RU','data-tilda-root-zone':'com','data-tilda-project-country':'RU','data-tilda-cookie':'no'}).forEach(([k,v])=>meta.setAttribute(k,v));document.body.appendChild(meta);
   const final=document.querySelector('.final-content');
@@ -58,14 +58,93 @@
 
   function invalidMessage(field) {
     if (field.name === 'name' && field.validity.valueMissing) return 'Укажите ваше имя';
-    if (field.name === 'Phone') return 'Укажите номер телефона с кодом страны';
-    if (field.name === 'email') return 'Проверьте адрес почты';
+    if (field.name === 'Phone') return 'Введите 10 цифр после +7';
+    if (field.name === 'email') return 'Введите адрес латиницей, например name@example.ru';
     if (field.name === 'consent') return 'Подтвердите согласие на обработку персональных данных';
     return field.validationMessage;
   }
 
+  const emailChars = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~@-]*$/;
+  const emailAddress = /^[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+)*@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+
+  function checkEmail(input) {
+    const address = input.value;
+    const valid = input.validity.typeMismatch === false && emailAddress.test(address)
+      && address.indexOf('@') <= 64 && address.length <= 254;
+    input.setCustomValidity(!address || valid ? '' : invalidMessage(input));
+  }
+
+  function configureEmail(input, hint) {
+    hint.setAttribute('aria-live', 'polite');
+    function explain() {
+      hint.textContent = invalidMessage(input);
+    }
+    const permitted = text => emailChars.test(text);
+    input.addEventListener('beforeinput', event => {
+      if (event.data && !permitted(event.data)) {
+        event.preventDefault();
+        explain();
+      }
+    });
+    input.addEventListener('paste', event => {
+      const text = event.clipboardData?.getData('text');
+      if (text && !permitted(text.trim())) {
+        event.preventDefault();
+        explain();
+      }
+    });
+    let previous = '';
+    input.addEventListener('input', () => {
+      if (permitted(input.value)) previous = input.value;
+      else {
+        input.value = previous;
+        explain();
+      }
+      checkEmail(input);
+    });
+  }
+
+  function configurePhone(input) {
+    let pendingCountryCode = false;
+    const normalize = () => {
+      const raw = input.value;
+      const caret = input.selectionStart ?? raw.length;
+      const prefixed = raw.startsWith('+7');
+      const offset = prefixed ? 2 : 0;
+      let digits = raw.slice(offset).replace(/\D/g, '');
+      let cursor = raw.slice(offset, caret).replace(/\D/g, '').length;
+      if ((!prefixed || pendingCountryCode) && /^[78]\d{10,}$/.test(digits)) {
+        digits = digits.slice(1);
+        cursor--;
+        pendingCountryCode = false;
+      }
+      input.value = '+7' + digits.slice(0, 10);
+      input.setSelectionRange(2 + Math.max(0, cursor), 2 + Math.max(0, cursor));
+    };
+    input.addEventListener('beforeinput', event => {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      if (event.inputType.startsWith('delete') && end <= 2 && event.inputType !== 'deleteContentForward') {
+        event.preventDefault();
+        input.setSelectionRange(2, 2);
+        return;
+      }
+      if (start <= 2 && end === input.value.length) {
+        pendingCountryCode = true;
+      } else if (start !== end || start < input.value.length) {
+        pendingCountryCode = false;
+      }
+      if (start < 2) input.setSelectionRange(2, Math.max(2, end));
+    });
+    input.addEventListener('input', normalize);
+    input.form.addEventListener('reset', () => { pendingCountryCode = false; });
+    return normalize;
+  }
+
   document.querySelectorAll('.gooddo-project-form').forEach(form => {
     const phone = form.querySelector('[name="Phone"]');
+    const normalizePhone = configurePhone(phone);
+    const email = form.querySelector('[type="email"]');
     const consent = form.querySelector('.consent-group');
     const submit = form.querySelector('.t-form__submit');
     consent.after(submit);
@@ -84,6 +163,8 @@
       field.setAttribute('aria-describedby', `${localError.id} ${error.id}`);
     });
 
+    if (email) configureEmail(email, fieldErrors.get(email));
+
     form.addEventListener('invalid', event => {
       const field = event.target;
       const message = invalidMessage(field);
@@ -101,11 +182,11 @@
       field.removeAttribute('aria-invalid');
       fieldErrors.get(field).textContent = '';
       setFormStatus(form, '');
-    });
+    }, true);
 
     const validateSubmission = event => {
-      const digits = phone.value.replace(/\D/g, '');
-      phone.setCustomValidity(digits.length >= 7 && digits.length <= 15 ? '' : 'Укажите номер телефона с кодом страны');
+      normalizePhone();
+      if (email) checkEmail(email);
       const valid = form.reportValidity();
       if (!valid || !libraryReady) {
         event.preventDefault();
@@ -152,4 +233,3 @@
     };
     libraryReady=true;document.documentElement.dataset.formsReady='true'}).catch(()=>{document.documentElement.dataset.formsReady='error'});
 })();
-
