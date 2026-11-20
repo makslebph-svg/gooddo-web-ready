@@ -169,6 +169,7 @@
   });
   ['pointerenter','pointermove','pointerdown','pointerup','focusin','focusout'].forEach(ev => player.addEventListener(ev, wake));
   for (const ev of ['play','pause','ended','timeupdate','loadedmetadata','durationchange','progress','volumechange','seeked']) reel.addEventListener(ev, render);
+  reel.addEventListener('playing', () => player.classList.add('has-played'), { once: true });
   reel.addEventListener('play', wake);
   reel.addEventListener('pause', wake);
   document.addEventListener('visibilitychange', () => { if (document.hidden && !inPip()) reel.pause(); });

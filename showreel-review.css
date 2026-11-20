@@ -1,0 +1,55 @@
+/* Keep the embedded showreel compact and retain its cover while video metadata loads. */
+#glass-scene .gd-player:not(:fullscreen, .is-fs) {
+  width: min(54vw, 860px, calc((100svh - 230px) * 16 / 9));
+}
+
+#glass-shell .gd-reel-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+#glass-shell.has-played .gd-reel-cover {
+  visibility: hidden;
+}
+
+@media (max-width: 760px) {
+  #glass-scene .gd-player:not(:fullscreen, .is-fs) {
+    width: calc(100vw - 40px);
+  }
+}
+
+@media (max-width: 420px), (max-height: 480px) {
+  #glass-shell .gd-controls {
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    padding: 0 4px 2px;
+  }
+
+  #glass-shell .gd-bar {
+    gap: 0;
+  }
+
+  #glass-shell .gd-bar .gd-btn {
+    width: 34px;
+    min-width: 24px;
+    flex: 0 1 34px;
+  }
+
+  #glass-shell .gd-time {
+    margin-left: 4px;
+    font-size: 11px !important;
+  }
+
+  #glass-shell .gd-volume .gd-vol {
+    display: none;
+  }
+
+  #glass-shell .gd-bigplay {
+    top: calc(50% - 16px);
+  }
+}

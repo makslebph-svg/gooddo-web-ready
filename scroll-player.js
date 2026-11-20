@@ -77,10 +77,29 @@ film.poster='assets/route-v27/hero.webp';
 film.src=matchMedia('(max-width:760px)').matches?window.GOODDO_ROUTE_MEDIA.mobile:window.GOODDO_ROUTE_MEDIA.desktop;
 film.muted=true;
 film.load();
+const menuFlightData=window.GOODDO_MENU_FLIGHT;
+const menuFlightTracks={};
+if(!reducedMotion.matches){
+  prepareMenuFlightTracks();
+}
+function prepareMenuFlightTracks(){
+  if(!menuFlightData||menuFlightTracks.forward)return;
+  for(const direction of ['forward','reverse']){
+    const video=document.createElement('video');
+    video.className='menu-flight-video';
+    video.muted=true;
+    video.playsInline=true;
+    video.preload='auto';
+    video.setAttribute('aria-hidden','true');
+    video.src=menuFlightData[direction];
+    film.after(video);
+    menuFlightTracks[direction]=video;
+  }
+}
 function schedule(){if(!request)request=requestAnimationFrame(render);}
 function render(now){
   request=0;
-  if(!ready||document.hidden)return;
+  if(!ready||document.hidden||directMenuFlight&&menuPlayback)return;
   if(film.seeking&&now-lastSeek<450)return;
   const time=Math.min(targetTime,film.duration-1/24);
   if(Math.abs(film.currentTime-time)>1/60){lastSeek=now;film.currentTime=time;}
@@ -88,25 +107,108 @@ function render(now){
 const routeTop=position=>journey.offsetTop+position/total*(journey.offsetHeight-innerHeight);
 const routePosition=()=>clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight))*total;
 let flight=0,flightTarget=-1,lastFlightEnd=-Infinity;
-function stopFlight(){if(flight)cancelAnimationFrame(flight);flight=0;flightTarget=-1;window.stopStudioSequence?.();}
+let directMenuFlight=false;
+let menuPlayback=null;
+function clearMenuPlayback(){
+  if(!menuPlayback)return;
+  menuPlayback.video.pause();
+  menuPlayback.video.classList.remove('is-visible');
+  menuPlayback=null;
+}
+function stopFlight(){
+  const wasPlayingMenuFlight=directMenuFlight&&menuPlayback;
+  if(flight)cancelAnimationFrame(flight);
+  flight=0;
+  flightTarget=-1;
+  directMenuFlight=false;
+  journey.classList.remove('is-menu-flying');
+  clearMenuPlayback();
+  if(wasPlayingMenuFlight){
+    scrollTo({top:routeTop(lastRoutePosition),behavior:'instant'});
+    syncScroll();
+  }
+  window.stopStudioSequence?.();
+}
+function menuVideoTime(sourceTime){
+  const {sourceTimes,fps}=menuFlightData;
+  let low=0, high=sourceTimes.length-1;
+  if(sourceTime<=sourceTimes[low])return 0;
+  if(sourceTime>=sourceTimes[high])return high/fps;
+  while(high-low>1){
+    const mid=(low+high)>>1;
+    if(sourceTimes[mid]<sourceTime)low=mid;
+    else high=mid;
+  }
+  const fraction=(sourceTime-sourceTimes[low])/(sourceTimes[high]-sourceTimes[low]);
+  return (low+fraction)/fps;
+}
+function menuInterval(origin,destination){
+  if(!menuFlightData)return null;
+  const reverse=origin>destination;
+  const first=menuVideoTime(origin), last=menuVideoTime(destination);
+  const endTime=(menuFlightData.sourceTimes.length-1)/menuFlightData.fps;
+  const start=reverse?endTime-first:first;
+  const end=reverse?endTime-last:last;
+  return {start,end,duration:(end-start)*1000,direction:reverse?'reverse':'forward'};
+}
+function startMenuPlayback(interval,destinationTime){
+  if(!interval)return;
+  prepareMenuFlightTracks();
+  const video=menuFlightTracks[interval.direction];
+  if(video.error)return;
+  const playback={video,start:interval.start,end:interval.end,destinationTime,visible:false,landingPrimed:false};
+  try{
+    video.currentTime=interval.start;
+    menuPlayback=playback;
+    video.play().catch(()=>{if(menuPlayback===playback)clearMenuPlayback();});
+  }catch{
+    if(menuPlayback===playback)clearMenuPlayback();
+  }
+}
+function revealArrival(){
+  const playback=menuPlayback;
+  if(!playback)return;
+  playback.video.pause();
+  const deadline=performance.now()+160;
+  const waitForFrame=()=>{
+    if(menuPlayback!==playback)return;
+    if((!film.seeking&&Math.abs(film.currentTime-targetTime)<.065)||performance.now()>=deadline){
+      clearMenuPlayback();
+    }else requestAnimationFrame(waitForFrame);
+  };
+  requestAnimationFrame(waitForFrame);
+}
 function flyTo(position,options={}){
   stopFlight();
   const from=scrollY,to=routeTop(position),distance=Math.abs(to-from);
   if(reducedMotion.matches||distance<2){scrollTo({top:to,behavior:'instant'});options.onComplete?.();return;}
-  const span=Math.abs(position-routePosition());
   const current=routePosition();
+  const interval=options.directMenu?menuInterval(targetTime,options.destinationTime):null;
+  if(interval&&interval.duration<35){
+    scrollTo({top:to,behavior:'instant'});
+    options.onComplete?.();
+    return;
+  }
   // Allocate motion time by footage travelled, not by the scroll height of a hold.
   // This avoids spending half a gesture on a still showreel/hall before moving.
   const low=Math.min(current,position),high=Math.max(current,position);
   let pieces=segments.filter(s=>s.offset<high&&s.offset+s.weight>low).map(s=>{
     const a=Math.max(low,s.offset),b=Math.min(high,s.offset+s.weight),fraction=(b-a)/s.weight;
-    const seconds=s.kind==='approach'?5:Math.abs(s.end-s.start);
-    const cost=Math.max(.06,(seconds||.22)*fraction);
+    const footage=Math.abs(s.end-s.start);
+    // Direct menu jumps skip stationary frames entirely.
+    const seconds=options.directMenu?footage:s.kind==='approach'?5:footage;
+    const cost=options.directMenu?seconds*fraction:Math.max(.06,(seconds||.22)*fraction);
     return {a,b,cost};
-  });
+  }).filter(piece=>piece.cost>0);
   if(position<current)pieces=pieces.reverse().map(s=>({...s,a:s.b,b:s.a}));
   const motionCost=pieces.reduce((sum,s)=>sum+s.cost,0);
-  const duration=Math.min(6500,Math.max(850,motionCost*1000))*(low>=titleSegment.offset?.5:1);
+  if(!motionCost){
+    scrollTo({top:to,behavior:'instant'});
+    options.onComplete?.();
+    return;
+  }
+  const duration=options.directMenu ? (interval?.duration ?? Math.min(2600,motionCost/atriumFrame*2600))
+    : Math.min(6500,Math.max(850,motionCost*1000))*(low>=titleSegment.offset?.5:1);
   const positionAt=fraction=>{
     let remaining=fraction*motionCost;
     for(const piece of pieces){if(remaining<=piece.cost)return piece.a+(piece.b-piece.a)*remaining/piece.cost;remaining-=piece.cost}
@@ -114,16 +216,68 @@ function flyTo(position,options={}){
   };
   const started=performance.now();
   flightTarget=position;
-  const frame=now=>{
-    const p=clamp((now-started)/duration);
-    const eased=p*p*(3-2*p);
-    scrollTo({top:routeTop(positionAt(eased)),behavior:'instant'});
-    if(p<1)flight=requestAnimationFrame(frame);
-    else{flight=0;flightTarget=-1;lastFlightEnd=performance.now();syncScroll();options.onComplete?.();}
+  directMenuFlight=Boolean(options.directMenu);
+  if(directMenuFlight){
+    journey.classList.add('is-menu-flying');
+    window.updateGlassScene?.(-1);
+    startMenuPlayback(interval,options.destinationTime);
+  }
+  const renderFlight=now=>{
+    let p=clamp((now-started)/duration);
+    const playback=menuPlayback;
+    if(playback){
+      const {video,start,end}=playback;
+      if(playback.visible||(!video.paused&&video.readyState>=2&&!video.seeking)){
+        if(!playback.visible){
+          video.classList.add('is-visible');
+          playback.visible=true;
+        }
+        p=clamp((video.currentTime-start)/(end-start));
+        if(!playback.landingPrimed&&end-video.currentTime<=.14&&ready){
+          playback.landingPrimed=true;
+          film.currentTime=Math.min(playback.destinationTime,film.duration-frame);
+        }
+      }else if(!playback.visible&&now-started>220){
+        clearMenuPlayback();
+      }else if(!playback.visible){
+        p=0;
+      }
+      if(now-started>=2820)p=1;
+    }
+    const progress=menuPlayback?p:p*p*(3-2*p);
+    const currentPosition=p<1?positionAt(progress):position;
+    if(menuPlayback&&p<1){
+      // The native video runs independently of browser scrolling and scene layout.
+      lastRoutePosition=currentPosition;
+      document.getElementById('journey-progress').style.transform=`scaleX(${currentPosition/total})`;
+    }else{
+      scrollTo({top:routeTop(currentPosition),behavior:'instant'});
+    }
+    if(p<1){
+      flight=requestAnimationFrame(renderFlight);
+    }else{
+      flight=0;
+      flightTarget=-1;
+      directMenuFlight=false;
+      lastFlightEnd=performance.now();
+      journey.classList.remove('is-menu-flying');
+      syncScroll();
+      revealArrival();
+      options.onComplete?.();
+    }
   };
-  flight=requestAnimationFrame(frame);
+  flight=requestAnimationFrame(renderFlight);
 }
-function goTo(position){flyTo(position);}
+function goTo(position){
+  const segment=segments.find(s=>position<s.offset+s.weight)||segments.at(-1);
+  const progress=clamp((position-segment.offset)/segment.weight);
+  const destinationTime=segment.start+(segment.end-segment.start)*progress;
+  flyTo(position,{directMenu:true,destinationTime});
+}
+function goToHall(index){
+  const hall=holds[index];
+  goTo(hall.offset+hall.weight*.68);
+}
 document.querySelector('#hero-showreel').addEventListener('click',()=>goTo(chapterPositions[2]));
 document.querySelector('#hero-scroll').addEventListener('click',()=>advanceStage(1));
 function returnToStart(){
@@ -135,7 +289,7 @@ function returnToStart(){
 function advanceStage(direction){
   if(flight){
     // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
-    const moving=Math.sign(flightTarget-routePosition());
+    const moving=Math.sign(flightTarget-(directMenuFlight?lastRoutePosition:routePosition()));
     if(direction===moving)return;
     stopFlight();
   }
@@ -221,6 +375,11 @@ function syncScroll(){
   document.body.classList.toggle('route-flight',!!flight);
   document.body.classList.toggle('in-cases',s.kind==='hall');
   targetTime=s.start+(s.end-s.start)*p;
+  if(directMenuFlight){
+    document.getElementById('journey-progress').style.transform=`scaleX(${progress})`;
+    schedule();
+    return;
+  }
   window.updateStudioSequence?.(s,p);
   window.updateTeamRoute?.(s,p);
   window.GooddoClients?.render(s.kind==='clients'?1:0);
@@ -288,8 +447,7 @@ addEventListener('resize',()=>{
 });
 chapters.forEach((button,i)=>{if(button.id!=='cases-nav-trigger')button.addEventListener('click',()=>goTo(chapterPositions[i]))});
 document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>{
-  const hold = holds[Number(button.dataset.hall)];
-  goTo(hold.offset + hold.weight * .68);
+  goToHall(Number(button.dataset.hall));
 }));
 document.querySelectorAll('[data-walk]').forEach(button=>button.addEventListener('click',()=>goTo(holds[Number(portfolio.dataset.hallIndex||0)].offset+holds[0].weight*.68)));
 syncScroll();
@@ -304,4 +462,3 @@ function restoreRouteSection(){
 }
 film.addEventListener('loadeddata',restoreRouteSection);
 addEventListener('hashchange',restoreRouteSection);
-

@@ -35,7 +35,7 @@
 
   casesTrigger.addEventListener('click', event => {
     if (mobile.matches) {
-      if (!inHall) goTo(chapterPositions[3]);
+      if (!inHall) goToHall(0);
       return;
     }
     if (inHall) {

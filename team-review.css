@@ -18,10 +18,10 @@
 
 #team-room .team-caption h2,
 #team-room .team-caption[data-person="ramil"] h2 {
-  font-size: clamp(27px, 2.6vw, 43px);
+  font-size: clamp(40.5px, 3.9vw, 64.5px);
   line-height: 1.08;
   margin: 0 0 7px;
-  text-transform: none;
+  text-transform: uppercase;
   text-wrap: balance;
 }
 
@@ -55,6 +55,6 @@
 
   #team-room .team-caption h2,
   #team-room .team-caption[data-person="ramil"] h2 {
-    font-size: clamp(27px, 7.2vw, 37px);
+    font-size: clamp(40.5px, 10.8vw, 55.5px);
   }
 }

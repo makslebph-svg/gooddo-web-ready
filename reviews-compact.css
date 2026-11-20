@@ -1,0 +1,263 @@
+#clients-scene .clients-content {
+  inset-block-start: max(calc(var(--route-hud-height, 74px) + 8px), min(13svh, 112px));
+  gap: clamp(5px, 1svh, 11px);
+}
+
+#clients-scene .reviews-carousel {
+  display: grid;
+  align-items: center;
+  flex: none;
+  width: min(920px, 100%);
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  margin: auto auto 0;
+}
+
+#clients-scene .client-review {
+  gap: 9px;
+  width: 52%;
+  min-height: clamp(220px, 37svh, 324px);
+  height: auto;
+  max-height: none;
+  padding: clamp(15px, 1.5vw, 22px);
+  justify-content: space-between;
+}
+
+#clients-scene .client-review[data-position="current"] {
+  grid-area: 1 / 1;
+  position: relative;
+  inset: auto;
+  justify-self: center;
+  transform: none;
+}
+
+#clients-scene .client-review .review-quote {
+  font-size: clamp(28px, 3.2vw, 42px);
+  margin: 0;
+}
+
+#clients-scene .client-review .review-copy {
+  flex: none;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+
+#clients-scene .client-review .review-copy blockquote {
+  font-size: clamp(14px, 1.15vw, 17px);
+  line-height: 1.38;
+}
+
+#clients-scene .client-review .review-author {
+  gap: 9px;
+  margin: 0;
+}
+
+#clients-scene .client-review .review-author img {
+  width: 36px;
+  height: 36px;
+}
+
+#clients-scene .client-review .review-author > div {
+  gap: 2px;
+}
+
+#clients-scene .client-review .review-author span {
+  font-size: 12px;
+}
+
+#clients-scene .client-logo-strip {
+  margin-top: auto;
+}
+
+@media (max-width: 760px) {
+  #clients-scene .reviews-carousel {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  #clients-scene .client-review .review-copy blockquote {
+    font-size: 13px;
+    line-height: 1.32;
+  }
+
+  #clients-scene .client-review[data-position="current"] {
+    width: min(100%, 520px);
+    min-height: clamp(168px, 30svh, 225px);
+    gap: 8px;
+    padding: clamp(10px, 3vw, 16px);
+  }
+}
+
+@media (max-height: 700px) {
+  #clients-scene .clients-content {
+    gap: 5px;
+  }
+
+  #clients-scene .client-review {
+    min-height: clamp(143px, 33svh, 225px);
+    gap: 6px;
+  }
+
+  #clients-scene .client-review .review-copy blockquote {
+    font-size: clamp(13px, 1.1vw, 16px);
+    line-height: 1.32;
+  }
+
+  #clients-scene .client-review .review-quote {
+    font-size: 28px;
+  }
+
+  #clients-scene .client-logo-strip {
+    min-height: 0;
+    padding-block: 4px 0;
+  }
+
+  #clients-scene .client-logo-strip .client-logo {
+    height: 24px;
+  }
+
+  #clients-scene .client-logo-strip img {
+    max-height: 22px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 710px) {
+  #clients-scene .clients-content {
+    inset: calc(var(--route-hud-height, 74px) + 5px) 7px 6px;
+    gap: 3px;
+    padding: 0;
+  }
+
+  #clients-scene .clients-heading h2 {
+    font-size: 25px;
+    margin-top: 0;
+  }
+
+  #clients-scene .clients-end {
+    font-size: 10px;
+  }
+
+  #clients-scene .clients-heading .eyebrow,
+  #clients-scene .client-review .review-quote {
+    display: none;
+  }
+
+  #clients-scene .client-review[data-position="current"] {
+    min-height: 153px;
+    gap: 6px;
+    padding: 7px 8px;
+  }
+
+  #clients-scene .review-navigation {
+    min-height: 44px;
+    height: 44px;
+  }
+
+  #clients-scene .client-logo-strip {
+    gap: 3px 6px;
+    padding-top: 3px;
+  }
+
+  #clients-scene .client-logo-strip .client-logo {
+    height: 18px;
+  }
+
+  #clients-scene .client-logo-strip img {
+    max-height: 16px;
+  }
+
+  #clients-scene .client-review .review-copy blockquote {
+    font-size: 12px;
+    line-height: 1.19;
+  }
+
+  #clients-scene .client-review .review-author img {
+    width: 29px;
+    height: 29px;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 650px) {
+  #clients-scene .clients-content {
+    inset-block: calc(var(--route-hud-height, 74px) + 4px) 6px;
+    gap: 3px;
+  }
+
+  #clients-scene .clients-heading {
+    margin: 0;
+  }
+
+  #clients-scene .clients-heading h2 {
+    font-size: 24px;
+    margin: 1px 0 0;
+  }
+
+  #clients-scene .clients-end {
+    font-size: 10px;
+  }
+
+  #clients-scene .client-review[data-position="current"] {
+    width: min(95%, 740px);
+    min-height: 115px;
+    padding: 9px 12px;
+  }
+
+  #clients-scene .clients-heading .eyebrow,
+  #clients-scene .client-review:not([data-position="current"]),
+  #clients-scene .client-review .review-quote {
+    display: none;
+  }
+
+  #clients-scene .client-review .review-copy blockquote {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  #clients-scene .client-review .review-author img {
+    width: 26px;
+    height: 26px;
+  }
+
+  #clients-scene .client-review .review-author :is(strong, span) {
+    font-size: 11px;
+  }
+
+  #clients-scene .review-navigation {
+    min-height: 44px;
+    height: 44px;
+    margin-block: 0;
+  }
+
+  #clients-scene .client-logo-strip {
+    padding-block: 0;
+  }
+
+  #clients-scene .client-logo-strip .client-logo {
+    height: 22px;
+    min-width: 0;
+    padding-inline: 4px;
+  }
+}
+
+@media (min-width: 761px) and (min-height: 651px) and (max-height: 790px) {
+  #clients-scene .clients-content {
+    inset-block-start: max(calc(var(--route-hud-height, 74px) + 8px), 11svh);
+    gap: 5px;
+  }
+
+  #clients-scene .clients-heading h2 {
+    font-size: clamp(30px, 2.8vw, 40px);
+  }
+
+  #clients-scene .client-logo-strip {
+    min-height: 48px;
+    padding-block: 7px 4px;
+  }
+
+  #clients-scene .client-logo-strip .client-logo {
+    height: 32px;
+  }
+}

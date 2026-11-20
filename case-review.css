@@ -13,7 +13,7 @@
   --cases-card-height: calc((var(--cases-card-width) - 2px) / var(--cases-cover-ratio) + var(--cases-caption-height) + 2px);
   --cases-block-height: calc(var(--cases-heading-reserve) + var(--cases-card-height) + var(--cases-controls-height));
   --cases-heading-top: calc(var(--cases-top-edge) + max(0px, (var(--cases-available-height) - var(--cases-block-height)) / 2));
-  --cases-heading-reserve: 58px;
+  --cases-heading-reserve: 84px;
 }
 
 #journey #demo .demo-head {
@@ -25,6 +25,7 @@
 #journey #demo #deck-heading {
   margin-inline: auto;
   text-wrap: balance;
+  text-transform: uppercase;
   text-shadow: 0 2px 10px #08121cbf;
 }
 
@@ -64,7 +65,7 @@
     --cases-bottom-edge: calc(48px + env(safe-area-inset-bottom, 0px));
     --cases-max-card-width: min(80vw, 330px);
     --cases-caption-height: 84px;
-    --cases-heading-reserve: 68px;
+    --cases-heading-reserve: 84px;
   }
 
   #demo #deck .art[data-offset]:not([data-offset="0"]) {
@@ -74,11 +75,23 @@
 
 @media (max-height: 440px) {
   #journey #demo {
-    --cases-heading-reserve: 35px;
+    --cases-heading-reserve: 51px;
     --cases-bottom-edge: calc(35px + env(safe-area-inset-bottom, 0px));
     --cases-max-card-width: min(42vw, 245px);
     --cases-caption-height: 68px;
     --cases-cover-ratio: 2.285714;
   }
 
+}
+
+#demo .art .card-caption {
+  background: linear-gradient(125deg, rgb(233 240 241 / 34%), rgb(218 230 234 / 28%));
+  color: #fff9ee;
+  text-shadow: 0 1px 4px #07121c;
+  box-shadow: inset 0 1px #ffffff59;
+}
+
+#demo .art .card-caption :is(.card-index, .card-arrow) {
+  color: inherit;
+  text-shadow: inherit;
 }
