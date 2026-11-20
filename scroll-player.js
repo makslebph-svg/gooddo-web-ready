@@ -165,18 +165,17 @@ function startMenuPlayback(interval,destinationTime){
     if(menuPlayback===playback)clearMenuPlayback();
   }
 }
+function releaseArrivalFrame(){
+  if(directMenuFlight||!menuPlayback)return;
+  if(!menuPlayback.visible||(!film.seeking&&film.readyState>=2&&Math.abs(film.currentTime-targetTime)<.065)){
+    clearMenuPlayback();
+  }
+}
 function revealArrival(){
-  const playback=menuPlayback;
-  if(!playback)return;
-  playback.video.pause();
-  const deadline=performance.now()+160;
-  const waitForFrame=()=>{
-    if(menuPlayback!==playback)return;
-    if((!film.seeking&&Math.abs(film.currentTime-targetTime)<.065)||performance.now()>=deadline){
-      clearMenuPlayback();
-    }else requestAnimationFrame(waitForFrame);
-  };
-  requestAnimationFrame(waitForFrame);
+  if(!menuPlayback)return;
+  menuPlayback.video.pause();
+  // Hold the arrival frame until the main route has decoded its frame.
+  releaseArrivalFrame();
 }
 function flyTo(position,options={}){
   stopFlight();
@@ -435,7 +434,10 @@ function syncScroll(){
   schedule();
 }
 film.addEventListener('loadeddata',()=>{ready=true;film.pause();film.classList.add('ready');loading.hidden=true;syncScroll();});
-film.addEventListener('seeked',schedule);
+film.addEventListener('seeked',()=>{
+  schedule();
+  releaseArrivalFrame();
+});
 film.addEventListener('error',()=>{loading.hidden=false;loading.textContent='Не удалось загрузить видео — обновите страницу';});
 film.addEventListener('play',()=>film.pause());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncScroll();});
