@@ -233,7 +233,7 @@ function flyTo(position,options={}){
           playback.visible=true;
         }
         p=clamp((video.currentTime-start)/(end-start));
-        if(!playback.landingPrimed&&end-video.currentTime<=.14&&ready){
+        if(!playback.landingPrimed&&ready){
           playback.landingPrimed=true;
           film.currentTime=Math.min(playback.destinationTime,film.duration-frame);
         }
