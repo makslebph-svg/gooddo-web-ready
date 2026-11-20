@@ -1,0 +1,110 @@
+/* Keep the contact card's original form and address layout at each size. */
+@media (min-width: 761px) and (min-height: 621px) {
+  #final-scene .final-content.final-project {
+    padding: 24px 26px;
+  }
+
+  #final-scene .final-project h2 {
+    margin: 13px 0 22px;
+  }
+
+  #final-scene .final-project h2 br {
+    display: initial;
+  }
+
+  #final-scene .form-consent,
+  #final-scene .gooddo-project-form .t-form__submit {
+    margin-top: 16px;
+  }
+
+  #final-scene .final-project-bottom {
+    margin-top: 23px;
+    gap: 30px;
+  }
+
+  #final-scene .work-geography h3 {
+    margin-bottom: 13px;
+  }
+
+  #final-scene .work-geography ol {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  #final-scene .final-content.final-project {
+    padding: clamp(12px, 2svh, 22px) clamp(14px, 4.5vw, 20px);
+  }
+
+  #final-scene .gooddo-form-fields,
+  #final-scene .project-contacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #final-scene .gooddo-form-fields {
+    gap: clamp(5px, 1svh, 12px);
+  }
+
+  #final-scene .form-field-label {
+    margin-bottom: 3px;
+  }
+
+  #final-scene .form-consent,
+  #final-scene .gooddo-project-form .t-form__submit {
+    margin-top: 8px;
+  }
+
+  #final-scene .final-project-bottom {
+    margin-top: 12px;
+  }
+
+  #final-scene .project-contacts a,
+  #final-scene .project-contacts a:not(:first-child) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 29px;
+    padding: 4px 0;
+  }
+}
+
+/* Keep the three rows and their reading order even on short phones. */
+@media (max-width: 600px) and (max-height: 799px) and (orientation: portrait) {
+  #final-scene .gooddo-form-fields [data-field-name] label {
+    display: grid;
+    grid-template-columns: 65px minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+
+  #final-scene .gooddo-form-fields .form-field-label {
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) and (max-height: 640px) and (orientation: portrait) {
+  #final-scene .final-content.final-project {
+    padding-block: 9px;
+  }
+
+  #final-scene .t-input {
+    height: 31px;
+    padding-block: 4px;
+  }
+
+  #final-scene .gooddo-form-fields {
+    row-gap: 4px;
+  }
+
+  #final-scene .project-contacts a,
+  #final-scene .project-contacts a:not(:first-child) {
+    min-height: 24px;
+    padding-block: 2px;
+  }
+
+  #final-scene .final-project-bottom {
+    margin-top: 6px;
+    row-gap: 4px;
+  }
+}

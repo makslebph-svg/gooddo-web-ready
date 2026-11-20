@@ -1,21 +1,10 @@
 (() => {
   const journey = document.getElementById('journey');
   const hud = journey.querySelector('.route-hud');
-  const nav = hud.querySelector('.route-nav');
   const casesTrigger = document.getElementById('cases-nav-trigger');
   const hallNav = document.getElementById('cases-subnav');
   const hallButtons = [...hallNav.querySelectorAll('[data-hall]')];
   const mobile = matchMedia('(max-width: 760px), (max-width: 960px) and (max-height: 440px)');
-  const toggle = document.createElement('button');
-
-  nav.id ||= 'route-main-navigation';
-  toggle.type = 'button';
-  toggle.className = 'route-menu-toggle';
-  toggle.textContent = 'Меню';
-  toggle.setAttribute('aria-controls', nav.id);
-  toggle.setAttribute('aria-expanded', 'false');
-  nav.before(toggle);
-
   let desktopOpen = false;
   let inHall = false;
   let moving = false;
@@ -28,12 +17,6 @@
   new ResizeObserver(updateHudHeight).observe(hud);
   updateHudHeight();
 
-  function setMobileOpen(open, restoreFocus = false) {
-    nav.hidden = mobile.matches && !open;
-    toggle.setAttribute('aria-expanded', String(mobile.matches && open));
-    if (restoreFocus && mobile.matches) toggle.focus({preventScroll: true});
-  }
-
   function updateHallNav() {
     hallNav.hidden = !inHall && (mobile.matches || !desktopOpen || moving);
     if (mobile.matches) {
@@ -45,20 +28,13 @@
     }
   }
 
-  toggle.addEventListener('click', () => {
-    setMobileOpen(nav.hidden);
-  });
-
   mobile.addEventListener('change', () => {
     desktopOpen = false;
-    setMobileOpen(false, nav.contains(document.activeElement));
     updateHallNav();
   });
-  setMobileOpen(false);
 
   casesTrigger.addEventListener('click', event => {
     if (mobile.matches) {
-      setMobileOpen(false, true);
       if (!inHall) goTo(chapterPositions[3]);
       return;
     }
@@ -101,24 +77,15 @@
     updateHallNav();
   });
 
-  nav.addEventListener('click', event => {
-    if (mobile.matches && event.target.closest('button')) setMobileOpen(false, true);
-  });
-
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || document.querySelector('dialog[open]')) return;
-    if (mobile.matches && !nav.hidden) {
-      setMobileOpen(false, true);
-    } else if (desktopOpen && !inHall) {
+    if (desktopOpen && !inHall) {
       desktopOpen = false;
       if (hallNav.contains(document.activeElement)) casesTrigger.focus({preventScroll: true});
       updateHallNav();
     }
   });
   document.addEventListener('click', event => {
-    if (!nav.contains(event.target) && !toggle.contains(event.target) && mobile.matches && !nav.hidden) {
-      setMobileOpen(false, nav.contains(document.activeElement));
-    }
     if (desktopOpen && !casesTrigger.contains(event.target) && !hallNav.contains(event.target)) {
       desktopOpen = false;
       updateHallNav();
@@ -133,14 +100,13 @@
   brand.href = '#home';
   brand.removeAttribute('target');
   brand.setAttribute('aria-label', 'GoodDo — главная');
-  brand.addEventListener('click', () => setMobileOpen(false));
 
   window.updateCasesNavigation = (segment, isMoving) => {
     inHall = segment.kind === 'hall';
     moving = isMoving;
     if (inHall) desktopOpen = false;
     if (!inHall && !desktopOpen && hallNav.contains(document.activeElement)) {
-      (mobile.matches ? toggle : casesTrigger).focus({preventScroll: true});
+      casesTrigger.focus({preventScroll: true});
     }
     activeHall = inHall ? hallButtons.find(button => Number(button.dataset.hall) === segment.hall) : null;
     hallButtons.forEach(button => {

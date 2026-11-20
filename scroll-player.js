@@ -8,6 +8,10 @@ const finalScene = document.getElementById('final-scene');
 const finalContent = finalScene.querySelector('.final-content');
 const loopHero = document.getElementById('loop-hero');
 const chapters = [...document.querySelectorAll('[data-progress]')];
+const chapterNav = document.querySelector('.route-nav');
+const clientsNavButton = chapterNav.querySelector('[data-route="clients"]');
+let currentNavButton = chapterNav.querySelector('[aria-current="step"]');
+
 const titles = [...document.querySelectorAll('.story-title')];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const clamp = n => Math.max(0,Math.min(1,n));
@@ -260,8 +264,18 @@ function syncScroll(){
   journey.dataset.targetTime=targetTime.toFixed(3);
   journey.dataset.segment=s.kind;
   const chapter=finalVisible?5:s.kind.startsWith('team-')?4:position>=holds[0].offset?3:position>=approachSegment.offset?2:position>=titleSegment.offset?1:0;
-  chapters.forEach((button,i)=>button.setAttribute('aria-current',i===chapter&&s.kind!=='clients'?'step':'false'));
-  document.querySelector('[data-route="clients"]')?.setAttribute('aria-current',s.kind==='clients'?'step':'false');
+  const activeButton = s.kind === 'clients' ? clientsNavButton : chapters[chapter];
+  if (activeButton !== currentNavButton) {
+    currentNavButton?.removeAttribute('aria-current');
+    activeButton.setAttribute('aria-current', 'step');
+    currentNavButton = activeButton;
+    if (chapterNav.scrollWidth > chapterNav.clientWidth) {
+      const navBounds = chapterNav.getBoundingClientRect();
+      const buttonBounds = activeButton.getBoundingClientRect();
+      if (buttonBounds.left < navBounds.left) chapterNav.scrollLeft += buttonBounds.left - navBounds.left;
+      else if (buttonBounds.right > navBounds.right) chapterNav.scrollLeft += buttonBounds.right - navBounds.right;
+    }
+  }
   schedule();
 }
 film.addEventListener('loadeddata',()=>{ready=true;film.pause();film.classList.add('ready');loading.hidden=true;syncScroll();});
