@@ -1,0 +1,15 @@
+#demo #project-cards .art {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+@media (max-width: 760px), (max-width: 960px) and (max-height: 440px) {
+  #journey #cases-subnav button {
+    min-height: 44px;
+  }
+
+  #journey #demo {
+    --cases-top-edge: calc(var(--route-hud-height, 64px) + 48px);
+  }
+}

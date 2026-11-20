@@ -13,7 +13,7 @@
   const status = document.getElementById('status');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let selected = 0, centered = 0, closing = false;
-  let dragStart = null, dragged = false, lastWheelAt = 0;
+  let dragStart = null, suppressClickUntil = 0, lastWheelAt = 0;
   let flight;
 
   function showCarousel() {
@@ -70,8 +70,8 @@
     button.title = 'Открыть кейс ' + work.name;
     caption.append(index, title, arrow);
     button.append(image, caption);
-    button.onclick = () => {
-      if (dragged) { dragged = false; return; }
+    button.onclick = event => {
+      if (event.detail && performance.now() < suppressClickUntil) return;
       if (i !== centered) { centered = i; showCarousel(); return; }
       openProject(i);
     };
@@ -202,23 +202,31 @@
     lastWheelAt = now;
     rotate(event.deltaX > 0 ? 1 : -1);
   }, {passive:false});
+  function finishCaseGesture(direction) {
+    suppressClickUntil = performance.now() + 400;
+    if (direction) rotate(direction);
+  }
+
+  // The route's touch handler owns finger gestures so a vertical swipe can change halls.
+  window.finishCaseGesture = finishCaseGesture;
+  cards.addEventListener('touchstart', () => { suppressClickUntil = 0; }, {passive:true});
   cards.addEventListener('pointerdown', event => {
-    if (!event.target.closest('.art') || deck.inert || dialog.open) return;
-    dragStart = {x:event.clientX, y:event.clientY};
-    dragged = false;
+    if (event.pointerType === 'touch' || event.button !== 0 || !event.target.closest('.art') || deck.inert || dialog.open) return;
+    suppressClickUntil = 0;
+    dragStart = {id:event.pointerId, x:event.clientX, y:event.clientY};
   });
   window.addEventListener('pointerup', event => {
-    if (!dragStart) return;
+    if (event.pointerId !== dragStart?.id) return;
     const dx = event.clientX - dragStart.x;
     const dy = event.clientY - dragStart.y;
     dragStart = null;
     if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
-      dragged = true;
-      rotate(dx < 0 ? 1 : -1);
-      setTimeout(() => { dragged = false; }, 350);
+      finishCaseGesture(dx < 0 ? 1 : -1);
     }
   });
-  window.addEventListener('pointercancel', () => { dragStart = null; });
+  window.addEventListener('pointercancel', event => {
+    if (event.pointerId === dragStart?.id) dragStart = null;
+  });
   cards.addEventListener('keydown', event => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
     event.preventDefault();
@@ -242,4 +250,3 @@
   };
   window.leavePortfolio = () => { dragStart = null; };
 })();
-

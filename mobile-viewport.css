@@ -1,0 +1,46 @@
+/* Mobile browser chrome changes the visible height while the route stays pinned. */
+@supports (height: 100dvh) {
+  @media (max-width: 960px), (pointer: coarse) {
+    #journey > .stage {
+      height: 100dvh;
+      min-height: 0;
+    }
+
+    #journey #demo {
+      --cases-available-height: calc(100dvh - var(--cases-top-edge) - var(--cases-bottom-edge));
+    }
+  }
+}
+
+/* Put the cover beside its caption when landscape has little vertical room. */
+@media (max-width: 960px) and (max-height: 360px) and (orientation: landscape) {
+  #journey #demo {
+    --cases-heading-reserve: 35px;
+    --cases-landscape-card-height: clamp(56px, calc(100dvh - var(--cases-top-edge) - 130px), 90px);
+    --cases-block-height: calc(var(--cases-heading-reserve) + var(--cases-landscape-card-height) + var(--cases-controls-height));
+  }
+
+  #demo #deck {
+    --case-card-width: min(72vw, 360px);
+    --case-card-height: var(--cases-landscape-card-height);
+    --case-card-center: calc(var(--cases-heading-top) + var(--cases-heading-reserve) + var(--case-card-height) / 2);
+  }
+
+  #demo #deck .art[data-offset="0"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    height: var(--case-card-height);
+  }
+
+  #demo #deck .art > :is(img, .case-card-cover) {
+    height: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
+    object-fit: cover;
+  }
+
+  #demo #deck .art .card-caption {
+    height: 100%;
+    font-size: 13px;
+  }
+}

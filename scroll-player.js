@@ -1,6 +1,7 @@
 // The atrium holds at rest; the first scroll begins a gradual descent.
 const film = document.getElementById('scroll-film');
 const journey = document.getElementById('journey');
+const stage = journey.querySelector('.stage');
 const loading = document.getElementById('loading');
 const portfolio = document.getElementById('demo');
 const heroCopy = document.getElementById('hero-copy');
@@ -104,8 +105,9 @@ function render(now){
   const time=Math.min(targetTime,film.duration-1/24);
   if(Math.abs(film.currentTime-time)>1/60){lastSeek=now;film.currentTime=time;}
 }
-const routeTop=position=>journey.offsetTop+position/total*(journey.offsetHeight-innerHeight);
-const routePosition=()=>clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight))*total;
+const routeScrollableHeight=()=>Math.max(1,journey.offsetHeight-stage.offsetHeight);
+const routeTop=position=>journey.offsetTop+position/total*routeScrollableHeight();
+const routePosition=()=>clamp((scrollY-journey.offsetTop)/routeScrollableHeight())*total;
 let flight=0,flightTarget=-1,lastFlightEnd=-Infinity;
 let directMenuFlight=false;
 let menuPlayback=null;
@@ -324,7 +326,7 @@ addEventListener('wheel',event=>{
     event.preventDefault();return;
   }
   if(journey.dataset.segment!=='clients'&&innerScrollAvailable(event.target,Math.sign(event.deltaY)))return;
-  if(scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+journey.offsetHeight-innerHeight+2)return;
+  if(scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+routeScrollableHeight()+2)return;
   event.preventDefault();
   const now=performance.now(),newGesture=now-lastWheelEvent>130;lastWheelEvent=now;
   if(!flight&&!newGesture&&now-lastFlightEnd<180)return;
@@ -343,27 +345,58 @@ addEventListener('keydown',event=>{
   event.preventDefault();
   advanceStage(direction);
 });
+function advanceTouchRoute(direction){
+  if(journey.dataset.segment!=='hall'||flight){
+    advanceStage(direction);
+    return;
+  }
+  // Closing a case can shift the scroll offset within its hall on mobile.
+  // Use the visible hall rather than the nearest scroll stop.
+  const nextHall=Number(portfolio.dataset.hallIndex)+direction;
+  if(holds[nextHall]){
+    goToHall(nextHall);
+  }else{
+    goTo(direction<0?chapterPositions[2]:clientsHold.offset+clientsHold.weight*.5);
+  }
+}
 let touchStart=null;
 addEventListener('touchstart',event=>{
-  if(event.touches.length!==1||!routeInputAllowed(event.target)||scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+journey.offsetHeight-innerHeight+2){touchStart=null;return;}
-  touchStart={x:event.touches[0].clientX,y:event.touches[0].clientY,target:event.target,native:false,reading:clientReadingTarget(event.target)};
+  if(event.touches.length!==1||!routeInputAllowed(event.target)||scrollY<journey.offsetTop-2||scrollY>journey.offsetTop+routeScrollableHeight()+2){touchStart=null;return;}
+  const {identifier,clientX:x,clientY:y}=event.touches[0];
+  const caseCard=event.target instanceof Element&&Boolean(event.target.closest('#project-cards .art'));
+  touchStart={identifier,x,y,target:event.target,caseCard,moved:false,native:false,reading:clientReadingTarget(event.target)};
 },{passive:true});
 addEventListener('touchmove',event=>{
   if(!touchStart||event.touches.length!==1)return;
-  const dx=event.touches[0].clientX-touchStart.x,dy=event.touches[0].clientY-touchStart.y;
-  if((touchStart.reading||journey.dataset.segment!=='clients')&&innerScrollAvailable(touchStart.target,dy<0?1:-1)){touchStart.native=true;return}
-  if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>6)event.preventDefault();
+  const touch=event.touches[0];
+  if(touch.identifier!==touchStart.identifier)return;
+  const dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;
+  if((touchStart.reading||journey.dataset.segment!=='clients')&&innerScrollAvailable(touchStart.target,dy<0?1:-1)){touchStart.native=true;return;}
+  if(Math.max(Math.abs(dx),Math.abs(dy))<=7)return;
+  if(touchStart.caseCard||Math.abs(dy)>Math.abs(dx)){
+    touchStart.moved=true;
+    if(event.cancelable)event.preventDefault();
+  }
 },{passive:false});
 addEventListener('touchend',event=>{
-  if(!touchStart||!event.changedTouches.length)return;
-  const dx=event.changedTouches[0].clientX-touchStart.x,dy=event.changedTouches[0].clientY-touchStart.y;
-  const native=touchStart.native||touchStart.reading;
+  if(!touchStart)return;
+  const gesture=touchStart;
+  const touch=Array.from(event.changedTouches).find(item=>item.identifier===gesture.identifier);
+  if(!touch)return;
   touchStart=null;
-  if(native)return;
-  if(Math.abs(dy)>35&&Math.abs(dy)>Math.abs(dx)*1.2)advanceStage(dy<0?1:-1);
-},{passive:true});
+  if(gesture.native||gesture.reading)return;
+  const dx=touch.clientX-gesture.x,dy=touch.clientY-gesture.y;
+  const horizontal=gesture.caseCard&&Math.abs(dx)>28&&Math.abs(dx)>Math.abs(dy)*1.15;
+  const vertical=Math.abs(dy)>32&&Math.abs(dy)>Math.abs(dx)*1.15;
+  if(gesture.caseCard&&(gesture.moved||horizontal||vertical)){
+    if(event.cancelable)event.preventDefault();
+    window.finishCaseGesture?.(horizontal?(dx<0?1:-1):0);
+  }
+  if(vertical)advanceTouchRoute(dy<0?1:-1);
+},{passive:false});
+addEventListener('touchcancel',()=>{touchStart=null;},{passive:true});
 function syncScroll(){
-  const progress=clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight));
+  const progress=clamp((scrollY-journey.offsetTop)/routeScrollableHeight());
   const forward=scrollY>previousY+1;
   previousY=scrollY;
   if(forward&&progress>=.999){returnToStart();return;}
@@ -442,11 +475,20 @@ film.addEventListener('error',()=>{loading.hidden=false;loading.textContent='ÐÐ
 film.addEventListener('play',()=>film.pause());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncScroll();});
 addEventListener('scroll',syncScroll,{passive:true});
-addEventListener('resize',()=>{
-  stopFlight();
-  scrollTo({top:routeTop(lastRoutePosition),behavior:'instant'});
-  syncScroll();
-});
+let stageWidth=stage.offsetWidth,stageHeight=stage.offsetHeight;
+function updateRouteViewport(){
+  const width=stage.offsetWidth,height=stage.offsetHeight;
+  if(width===stageWidth&&height===stageHeight)return;
+  const widthChanged=width!==stageWidth;
+  stageWidth=width;
+  stageHeight=height;
+  if(widthChanged)stopFlight();
+  if(!flight){
+    scrollTo({top:routeTop(lastRoutePosition),behavior:'instant'});
+    syncScroll();
+  }
+}
+new ResizeObserver(updateRouteViewport).observe(stage);
 chapters.forEach((button,i)=>{if(button.id!=='cases-nav-trigger')button.addEventListener('click',()=>goTo(chapterPositions[i]))});
 document.querySelectorAll('[data-hall]').forEach(button=>button.addEventListener('click',()=>{
   goToHall(Number(button.dataset.hall));
