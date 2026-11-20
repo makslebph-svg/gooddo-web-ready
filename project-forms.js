@@ -8,7 +8,6 @@
   if (final) {
     final.classList.add('final-project');
     final.innerHTML = `
-      <span class="eyebrow">GOODDO / ДАВАЙТЕ СОЗДАВАТЬ ВМЕСТЕ</span>
       <h2>Будем рады сделать<br> с вами классные проекты</h2>
       ${form('1234959346',true)}
       <div class="final-project-bottom">

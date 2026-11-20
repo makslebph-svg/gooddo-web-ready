@@ -1,0 +1,134 @@
+/* Center section titles and show the text directly over the gallery. */
+#hero-copy,
+#clients-scene .clients-heading,
+#story-titles .studio-summary-heading,
+#final-scene .final-project > h2 {
+  text-align: center;
+}
+
+#hero-copy > p {
+  margin-inline: auto;
+}
+
+#hero-copy .hero-actions {
+  justify-content: center;
+}
+
+#story-titles .studio-summary {
+  top: max(calc(var(--route-hud-height, 80px) + 20px), 16svh);
+  max-height: calc(100svh - max(calc(var(--route-hud-height, 80px) + 20px), 16svh) - 12px);
+}
+
+#story-titles::before {
+  background: linear-gradient(180deg, #101824b3, #101824a6 52%, #1018243d 84%, transparent);
+}
+
+#story-titles .studio-facts-grid .story-title,
+#story-titles .studio-trust,
+#final-scene .final-content.final-project {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #fff9ec;
+  text-shadow: 0 1px 5px #141716cc;
+}
+
+#story-titles .studio-facts-grid .story-title::before,
+#story-titles .studio-trust::before {
+  content: none;
+}
+
+#story-titles .studio-facts-grid .story-title {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#story-titles .studio-facts-grid .studio-metric,
+#story-titles .studio-facts-grid .story-title p {
+  color: inherit;
+}
+
+#story-titles .studio-facts-grid .story-title p {
+  margin: 0;
+  text-align: center;
+}
+
+#story-titles .studio-trust {
+  text-align: center;
+}
+
+#final-scene {
+  background: linear-gradient(180deg, #141b25a8, #141b259e 58%, #141b25bd);
+}
+
+#final-scene .form-field-label,
+#final-scene .form-consent,
+#final-scene .project-contacts a,
+#final-scene .project-contacts a span {
+  color: #fff9ec;
+}
+
+#final-scene .project-contacts a {
+  border-bottom-color: #fff9ec55;
+}
+
+#final-scene .work-geography li::before {
+  background: var(--gd-gold);
+}
+
+#final-scene .t-input,
+#final-scene .t-submit,
+#final-scene .form-local-status,
+#final-scene .js-successbox {
+  text-shadow: none;
+}
+
+#final-scene .form-field-error,
+#final-scene .t-input-error,
+#final-scene .t-form__errorbox-wrapper {
+  color: #ffcdc3;
+}
+
+/* The title and player enter together over the softened gallery. */
+#glass-scene {
+  flex-direction: column;
+  gap: clamp(9px, 2svh, 22px);
+  padding-top: min(100px, var(--route-hud-height, 80px));
+  transition: opacity .42s ease;
+}
+
+#glass-scene .showreel-heading {
+  margin: 0;
+  color: #fff8eb;
+  font: 500 clamp(28px, 4vw, 52px)/1.1 Oswald, sans-serif;
+  text-align: center;
+  text-shadow: 0 2px 14px #20160caa;
+}
+
+#glass-scene .gd-player:not(:fullscreen, .is-fs) {
+  max-width: min(calc(100vw - 20px), calc((100svh - 158px) * 16 / 9));
+}
+
+#journey[data-segment="hall"] #scroll-film {
+  filter: blur(6px);
+  transition: filter .48s ease;
+}
+
+#journey[data-segment="hall"] .portfolio-room {
+  filter: blur(6px);
+}
+
+@media (max-height: 520px) {
+  #glass-scene .showreel-heading { font-size: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #glass-scene,
+  #journey[data-segment="hall"] #scroll-film {
+    transition: none;
+  }
+}

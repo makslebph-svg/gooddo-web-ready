@@ -1,0 +1,84 @@
+#journey #demo {
+  --cases-top-edge: calc(var(--route-hud-height, 80px) + 24px);
+  --cases-bottom-edge: max(35px, calc(29px + env(safe-area-inset-bottom, 0px)));
+  --cases-available-height: calc(100svh - var(--cases-top-edge) - var(--cases-bottom-edge));
+  --cases-controls-height: 56px;
+  --cases-cover-ratio: 1.6;
+  --cases-caption-height: 94px;
+  --cases-max-card-width: min(41vw, 520.5px);
+  --cases-card-width: min(var(--cases-max-card-width), max(120px, calc(
+    (var(--cases-available-height) - var(--cases-heading-reserve) -
+      var(--cases-controls-height) - var(--cases-caption-height) - 2px) * var(--cases-cover-ratio)
+  )));
+  --cases-card-height: calc((var(--cases-card-width) - 2px) / var(--cases-cover-ratio) + var(--cases-caption-height) + 2px);
+  --cases-block-height: calc(var(--cases-heading-reserve) + var(--cases-card-height) + var(--cases-controls-height));
+  --cases-heading-top: calc(var(--cases-top-edge) + max(0px, (var(--cases-available-height) - var(--cases-block-height)) / 2));
+  --cases-heading-reserve: 58px;
+}
+
+#journey #demo .demo-head {
+  top: var(--cases-heading-top) !important;
+  display: block !important;
+  text-align: center;
+}
+
+#journey #demo #deck-heading {
+  margin-inline: auto;
+  text-wrap: balance;
+  text-shadow: 0 2px 10px #08121cbf;
+}
+
+#demo #deck {
+  --case-cover-ratio: var(--cases-cover-ratio);
+  --case-caption-height: var(--cases-caption-height);
+  --case-card-width: var(--cases-card-width);
+  --case-card-center: calc(var(--cases-heading-top) + var(--cases-heading-reserve) + var(--cases-card-height) / 2);
+}
+
+#demo .carousel-meta #walk-instruction {
+  display: none;
+}
+
+@keyframes case-player-entrance {
+  from { opacity: 0; translate: 0 9px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #demo.show-cases #deck .art:is([data-offset="0"], [data-offset="1"], [data-offset="-1"]) {
+    animation: case-player-entrance 480ms cubic-bezier(.2, .7, .25, 1) both;
+  }
+
+  #demo.show-cases #deck .art[data-offset="1"] {
+    animation-delay: 170ms;
+  }
+
+  #demo.show-cases #deck .art[data-offset="-1"] {
+    animation-delay: 260ms;
+  }
+}
+
+@media (max-width: 760px), (max-width: 960px) and (max-height: 440px) {
+  #journey #demo {
+    --cases-top-edge: calc(var(--route-hud-height, 64px) + 42px);
+    --cases-bottom-edge: calc(48px + env(safe-area-inset-bottom, 0px));
+    --cases-max-card-width: min(80vw, 330px);
+    --cases-caption-height: 84px;
+    --cases-heading-reserve: 68px;
+  }
+
+  #demo #deck .art[data-offset]:not([data-offset="0"]) {
+    display: none;
+  }
+}
+
+@media (max-height: 440px) {
+  #journey #demo {
+    --cases-heading-reserve: 35px;
+    --cases-bottom-edge: calc(35px + env(safe-area-inset-bottom, 0px));
+    --cases-max-card-width: min(42vw, 245px);
+    --cases-caption-height: 68px;
+    --cases-cover-ratio: 2.285714;
+  }
+
+}

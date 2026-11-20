@@ -5,8 +5,6 @@ const loading = document.getElementById('loading');
 const portfolio = document.getElementById('demo');
 const heroCopy = document.getElementById('hero-copy');
 const finalScene = document.getElementById('final-scene');
-const finalContent = finalScene.querySelector('.final-content');
-const loopHero = document.getElementById('loop-hero');
 const chapters = [...document.querySelectorAll('[data-progress]')];
 const chapterNav = document.querySelector('.route-nav');
 const clientsNavButton = chapterNav.querySelector('[data-route="clients"]');
@@ -70,8 +68,7 @@ const stagePositions=[
   ...holds.map(hold=>hold.offset+hold.weight*.68),
   clientsHold.offset+clientsHold.weight*.5,
   ...teamHolds.map(hold=>hold.offset+hold.weight*.68),
-  finale.offset+finale.weight*.42,
-  finale.offset+finale.weight*.94
+  finale.offset+finale.weight*.42
 ];
 const chapterPositions=[0,titleSegment.offset+titleSegment.weight*.5,reelSegment.offset+reelSegment.weight*.5,holds[0].offset+holds[0].weight*.68,teamHolds[0].offset+teamHolds[0].weight*.68,finale.offset+finale.weight*.42];
 let ready=false, targetTime=0, request=0, lastSeek=0, previousY=scrollY;
@@ -129,6 +126,12 @@ function flyTo(position,options={}){
 function goTo(position){flyTo(position);}
 document.querySelector('#hero-showreel').addEventListener('click',()=>goTo(chapterPositions[2]));
 document.querySelector('#hero-scroll').addEventListener('click',()=>advanceStage(1));
+function returnToStart(){
+  stopFlight();
+  lastFlightEnd=performance.now();
+  if(location.hash) history.replaceState(history.state,'','#home');
+  scrollTo({top:routeTop(0),behavior:'instant'});
+}
 function advanceStage(direction){
   if(flight){
     // Trackpad inertia cannot skip a scene, but an opposite gesture reverses it.
@@ -141,7 +144,7 @@ function advanceStage(direction){
   const next=direction>0
     ?stagePositions.findIndex(stop=>stop>position+tolerance)
     :stagePositions.findLastIndex(stop=>stop<position-tolerance);
-  if(next<0){if(direction>0)scrollTo({top:journey.offsetTop,behavior:'instant'});return;}
+  if(next<0){if(direction>0)returnToStart();return;}
   flyTo(stagePositions[next]);
 }
 function routeInputAllowed(target){
@@ -210,7 +213,7 @@ function syncScroll(){
   const progress=clamp((scrollY-journey.offsetTop)/Math.max(1,journey.offsetHeight-innerHeight));
   const forward=scrollY>previousY+1;
   previousY=scrollY;
-  if(forward&&progress>=.999){scrollTo({top:journey.offsetTop,behavior:'instant'});return;}
+  if(forward&&progress>=.999){returnToStart();return;}
   const position=progress*total;
   lastRoutePosition=position;
   const s=segments.find(s=>position<s.offset+s.weight)||segments.at(-1);
@@ -232,12 +235,6 @@ function syncScroll(){
   finalScene.style.visibility=finalVisible?'visible':'hidden';
   finalScene.inert=!finalVisible;
   finalScene.setAttribute('aria-hidden',String(!finalVisible));
-  const reveal=finalVisible?clamp((p-.65)/.2):0;
-  finalContent.style.opacity=1-reveal;
-  finalContent.inert=!finalVisible||reveal>.5;
-  loopHero.style.opacity=reveal;
-  loopHero.style.visibility=reveal>0?'visible':'hidden';
-  loopHero.setAttribute('aria-hidden',String(reveal===0));
   film.style.opacity=1;
   const reelBlur=s.kind==='approach'?5*clamp((p-.12)/.88):s.kind==='showreel'?5:s.kind==='portal'?5*(1-clamp(p/.28)):0;
   journey.style.setProperty('--route-reel-blur',`${reelBlur.toFixed(2)}px`);

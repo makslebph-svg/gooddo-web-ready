@@ -9,11 +9,10 @@
 
   const els = {play:$('reel-play'), toggle:$('reel-toggle'), back:$('reel-back'), fwd:$('reel-fwd'),
     mute:$('reel-mute'), volume:$('reel-volume'), seek:$('reel-seek'), fill:$('reel-fill'), buffer:$('reel-buffer'),
-    current:$('reel-current'), total:$('reel-total'), duration:$('reel-duration'), pip:$('reel-pip'),
+    current:$('reel-current'), total:$('reel-total'), pip:$('reel-pip'),
     expand:$('reel-expand'), surface:$('reel-surface'), flash:$('reel-flash')};
   const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
   const clamp01 = n => Math.max(0, Math.min(1, n));
-  const easeOut = p => 1 - Math.pow(1 - p, 3);
   let visible = false, idleTimer, surfaceClickTimer, seeking = false, lastVolume = 1;
   let touchControls = !matchMedia('(any-pointer: fine) and (any-hover: hover)').matches;
   const say = text => { status.textContent = text; };
@@ -29,8 +28,8 @@
   };
 
   window.updateGlassScene = progress => {
-    scene.style.opacity = easeOut(clamp01(progress / .08));
-    const available = progress >= .06;
+    const available = progress >= 0;
+    scene.style.opacity = available ? 1 : 0;
     scene.inert = !available;
     scene.setAttribute('aria-hidden', String(!available));
     if (available !== visible) {
@@ -78,7 +77,7 @@
     els.seek.disabled = els.back.disabled = els.fwd.disabled = d <= 0;
     els.fill.style.transform = `scaleX(${clamp01(p)})`;
     els.current.textContent = fmt(reel.currentTime);
-    els.total.textContent = els.duration.textContent = fmt(d);
+    els.total.textContent = fmt(d);
     els.seek.setAttribute('aria-valuetext', `${fmt(reel.currentTime)} из ${fmt(d)}`);
     const buffered = reel.buffered.length && d ? reel.buffered.end(reel.buffered.length - 1) / d : 0;
     els.buffer.style.transform = `scaleX(${clamp01(buffered)})`;

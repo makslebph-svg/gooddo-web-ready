@@ -1,0 +1,60 @@
+/* Ease the team room toward the warm oak tones of the first gallery. */
+#journey[data-segment^="team-"] #scroll-film {
+  filter: hue-rotate(calc(11deg * var(--team-grade, 0)))
+    saturate(calc(1 - .36 * var(--team-grade, 0)));
+}
+
+#team-room .team-caption,
+#team-room .team-caption[data-person="ramil"] {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #fffdf5;
+  text-shadow: 0 1px 3px #221813, 0 3px 12px #221813;
+}
+
+#team-room .team-caption h2,
+#team-room .team-caption[data-person="ramil"] h2 {
+  font-size: clamp(27px, 2.6vw, 43px);
+  line-height: 1.08;
+  margin: 0 0 7px;
+  text-transform: none;
+  text-wrap: balance;
+}
+
+#team-room .team-caption p {
+  font-size: clamp(15px, 1.2vw, 20px);
+  font-weight: 500;
+  color: inherit;
+  line-height: 1.35;
+}
+
+@media (min-width: 761px) {
+  #team-room .team-caption[data-align="right"] {
+    text-align: right;
+  }
+
+  #team-room .team-caption[data-align="right"] p {
+    margin-inline-start: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  #team-room::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: min(45vh, 320px);
+    background: linear-gradient(transparent, #181511ba);
+    opacity: var(--team-caption-opacity, 0);
+    pointer-events: none;
+  }
+
+  #team-room .team-caption h2,
+  #team-room .team-caption[data-person="ramil"] h2 {
+    font-size: clamp(27px, 7.2vw, 37px);
+  }
+}
