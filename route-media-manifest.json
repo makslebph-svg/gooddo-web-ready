@@ -1,10 +1,10 @@
 {
-  "version": 29,
+  "version": 31,
   "fps": 24,
   "duration": 53.458333333333336,
   "frames": 1283,
-  "desktop": "assets/route-v27/museum-route-desktop-team-v2.mp4",
-  "mobile": "assets/route-v27/museum-route-mobile-team-v2.mp4",
+  "desktop": "assets/route-v27/museum-route-desktop-dive-v31.mp4",
+  "mobile": "assets/route-v27/museum-route-mobile-dive-v31.mp4",
   "showreelTime": 8.291666666666668,
   "clips": [
     {
@@ -17,7 +17,14 @@
       "start": 0,
       "end": 7.041666666666667,
       "hold": 7,
-      "sha256": "a31854fa5bfbf624a745fc5e50dad5fc0d709c9c9b0134eb43cec8519732db04"
+      "sha256": "a31854fa5bfbf624a745fc5e50dad5fc0d709c9c9b0134eb43cec8519732db04",
+      "edit": {
+        "insertSource": "maksim-to-atrium",
+        "direction": "reverse",
+        "firstFrame": 51,
+        "lastFrame": 101,
+        "transition": "animated mask"
+      }
     },
     {
       "number": 2,
