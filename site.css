@@ -1134,12 +1134,26 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
   cursor: pointer;
 }
 
-#hero-copy #hero-showreel {
-  background: var(--gd-gold);
-  color: var(--gd-ink);
+.action-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -.14em;
+  flex: none;
 }
 
+#hero-copy #hero-showreel,
 #hero-copy #hero-showreel:hover,
+#hero-copy #hero-showreel:focus-visible {
+  background: none;
+  color: #fff;
+}
+
+#hero-copy #hero-showreel:hover {
+  text-decoration: underline;
+  text-underline-offset: .25em;
+}
+
 #project #project-source:hover {
   background: #f3d5a0;
 }
@@ -1820,14 +1834,12 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
   z-index: -1;
   border: 1px solid #f4f1e7ac;
   border-radius: 50%;
-  background: #f5f4ea0a;
   pointer-events: none;
 }
 
 #demo .carousel-navigation .carousel-control:hover::before,
 #clients-scene .review-navigation button:hover::before {
   border-color: var(--gd-gold);
-  background: #f5f2e936;
 }
 
 .review-dialog-close {
