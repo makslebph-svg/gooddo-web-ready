@@ -1,6 +1,7 @@
 window.GOODDO_CASE_MEDIA = {
   "tenet": {
     "video": "assets/case-library/tenet.mp4",
+    "aspectRatio": 1600 / 684,
     "poster": "assets/case-library/tenet.webp"
   },
   "garden": {
@@ -17,22 +18,27 @@ window.GOODDO_CASE_MEDIA = {
   },
   "t-bankfuturism": {
     "video": "assets/case-library/t-bankfuturism.mp4",
+    "aspectRatio": 506 / 900,
     "poster": "assets/case-library/t-bankfuturism.webp"
   },
   "volga": {
     "video": "assets/case-library/volga.mp4",
+    "aspectRatio": 1542 / 900,
     "poster": "assets/case-library/volga.webp"
   },
   "rostelecom": {
     "video": "assets/case-library/rostelecom.mp4",
+    "aspectRatio": 1600 / 360,
     "poster": "assets/case-library/rostelecom.webp"
   },
   "interrosmaster": {
     "video": "assets/case-library/interrosmaster.mp4",
+    "aspectRatio": 1600 / 622,
     "poster": "assets/case-library/interrosmaster.webp"
   },
   "t-sync": {
     "video": "assets/case-library/t-sync.mp4",
+    "aspectRatio": 502 / 900,
     "poster": "assets/case-library/t-sync.webp"
   },
   "sber-giga-cowork": {

@@ -8,7 +8,9 @@
   const progress = document.getElementById('carousel-progress');
   const dialog = document.getElementById('project');
   const media = document.getElementById('project-media');
+  const player = document.getElementById('case-player');
   const video = document.getElementById('project-video');
+  const playerStatus = document.getElementById('case-player-status');
   const close = document.getElementById('close');
   const status = document.getElementById('status');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -86,7 +88,7 @@
   }
 
   function showVideoLink() {
-    video.hidden = true;
+    player.hidden = true;
     const artwork = artworkFor(works[selected]);
     document.getElementById('project-poster').hidden = !artwork.poster;
     document.getElementById('project-watch').hidden = false;
@@ -100,7 +102,8 @@
   function setProject(index) {
     selected = (index + works.length) % works.length;
     const work = works[selected];
-    video.pause();
+    window.gooddoCasePlayer.stop();
+    playerStatus.textContent = '';
     document.getElementById('project-title').textContent = work.name;
     document.getElementById('project-desc').textContent = work.paragraphs[0];
     const story = document.getElementById('project-story');
@@ -116,10 +119,11 @@
     const artwork = artworkFor(work);
     const poster = document.getElementById('project-poster');
     const watch = document.getElementById('project-watch');
+    player.style.setProperty('--case-ratio', artwork.aspectRatio ?? '');
     watch.href = work.source;
     watch.hidden = true;
     media.classList.remove('project-media-external');
-    video.hidden = !artwork.video;
+    player.hidden = !artwork.video;
     poster.hidden = true;
     if (artwork.poster) {
       video.poster = artwork.poster;
@@ -130,7 +134,6 @@
       poster.removeAttribute('src');
     }
     document.querySelector('.project-tag').textContent = work.format;
-    document.getElementById('project-media-label').textContent = activeHall.short.toUpperCase();
     if (artwork.video) {
       video.src = artwork.video;
     } else {
@@ -161,14 +164,18 @@
       flight = media.animate([{transform:flightTransform(from),opacity:.45},{transform:'none',opacity:1}],{duration:650,easing:'cubic-bezier(.2,.8,.2,1)'});
     }
     close.focus({preventScroll:true});
-    if (artworkFor(works[selected]).video) video.play().catch(() => { status.textContent = 'Нажмите воспроизведение в плеере'; });
+    if (artworkFor(works[selected]).video) {
+      video.play().catch(() => {
+        if (dialog.open && !closing && !player.hidden && video.paused) playerStatus.textContent = 'Нажмите воспроизведение в плеере';
+      });
+    }
   }
 
   async function closeProject() {
     if (!dialog.open || closing) return;
     closing = true;
-    video.pause();
     dialog.classList.add('closing');
+    window.gooddoCasePlayer.stop();
     flight?.cancel();
     if (!reduced.matches) {
       flight = media.animate([{transform:'none',opacity:1},{transform:flightTransform(cards.children[selected].getBoundingClientRect()),opacity:0}],{duration:380,easing:'cubic-bezier(.4,0,.7,1)',fill:'forwards'});
@@ -178,7 +185,7 @@
   }
 
   dialog.addEventListener('close', () => {
-    video.pause();
+    window.gooddoCasePlayer.stop();
     flight?.cancel();
     closing = false;
     dialog.classList.remove('closing');
@@ -240,7 +247,6 @@
   }
   document.getElementById('prev').onclick = () => switchProject(-1);
   document.getElementById('next').onclick = () => switchProject(1);
-  document.addEventListener('visibilitychange', () => {if(document.hidden) video.pause();});
   window.setPortfolioHall = index => {
     activeHall = window.GOODDO_HALLS[index];
     works = window.GOODDO_CASES[activeHall.collection];

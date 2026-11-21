@@ -21,8 +21,10 @@
 }
 
 #hero-copy .hero-title-layout > p {
-  max-width: 29ch;
+  max-width: 32ch;
   margin: 14px 0 0;
+  font-size: clamp(15px, 1.35vw, 19px);
+  text-wrap: balance;
 }
 
 #hero-copy .hero-actions {
@@ -36,7 +38,7 @@
       width: max-content;
       max-width: 100%;
       grid-template-columns: max-content minmax(0, 1fr);
-      column-gap: clamp(10px, 1.15vw, 18px);
+      column-gap: clamp(14px, 1.8vw, 30px);
     }
 
     #hero-copy h1 {
@@ -53,17 +55,24 @@
 
     #hero-copy h1 span:last-child {
       grid-area: 2 / 1;
-      align-self: center;
+      align-self: last baseline;
     }
 
     #hero-copy .hero-title-layout > p {
       grid-area: 2 / 2;
-      contain: inline-size;
-      align-self: center;
+      container-type: inline-size;
+      align-self: last baseline;
       max-width: none;
       margin: 0;
-      font-size: clamp(12px, 1.08vw, 16px);
-      line-height: 1.28;
+    }
+
+    #hero-copy .hero-title-layout > p span {
+      display: block;
+      font-size: min(8.85cqi, 25px);
+      line-height: 1.18;
+      /* Align the descenders with the bottom of the uppercase title. */
+      translate: 0 -.19em;
+      white-space: nowrap;
     }
   }
 }
@@ -77,6 +86,10 @@
 
 #story-titles .studio-facts-grid .studio-metric {
   font-size: clamp(47px, 6vw, 88px);
+}
+
+.metric-letter-gap {
+  margin-inline-start: .045em;
 }
 
 @media (max-width: 760px), (max-height: 500px) {
@@ -138,10 +151,12 @@
 
 #story-titles .studio-trust {
   margin-block: clamp(10px, 2.2svh, 20px) 0;
+  max-width: min(56ch, 100%);
   padding: 0;
-  font-size: clamp(15px, 1.42vw, 21px);
+  font-size: clamp(16px, 1.58vw, 24px);
+  line-height: 1.45;
   text-align: center;
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 #final-scene {
@@ -157,15 +172,32 @@
 
 #final-scene .final-project-bottom {
   width: min(100%, 620px);
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 
-#final-scene .project-contacts a {
+#final-scene .project-contacts a,
+#final-scene .project-contacts a:not(:first-child) {
   display: grid;
   grid-template-columns: 5.4em minmax(0, 1fr);
   justify-content: normal;
-  column-gap: 10px;
-  border-bottom-color: #fff9ec55;
+  column-gap: 8px;
+  border-bottom: 0;
+  text-align: left;
+}
+
+@media (min-width: 761px) and (min-height: 521px) {
+  #final-scene .final-project-bottom {
+    width: 100%;
+  }
+
+  #final-scene .project-contacts {
+    justify-self: end;
+  }
+
+  #final-scene .project-contacts a,
+  #final-scene .project-contacts a:not(:first-child) {
+    grid-template-columns: 5.4em max-content;
+  }
 }
 
 #final-scene .work-geography li::before {
